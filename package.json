@@ -1,0 +1,24 @@
+{
+  "name": "Node.js TypeScript Template",
+  "version": "1.0.0",
+  "description": "",
+  "main": "core.js",
+  "type": "module",
+  "scripts": {
+    "start": "node core.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "GPLv3",
+  "dependencies": {
+    "@types/node": "^18.0.6",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.0.0",
+    "node-fetch": "^3.2.6",
+    "socket.io": "^4.6.2"
+  }
+}

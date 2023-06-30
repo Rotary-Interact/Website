@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "esnext",
+    "lib": ["dom", "webworker"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "alwaysStrict" : true,
+    "removeComments": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true
+  },
+  "exclude": [ "lib" ]
+}
