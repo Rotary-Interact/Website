@@ -19,6 +19,7 @@ Front-end code is divided into four folders: media, scripts, styles, and views. 
   * {{page}}.js (but only modify {{page}}.ts) - see note about TypeScript
   * all.css
   * {{page}}.css
+
 So with all that in mind, let's see how to create a page
 #### Process for creating a page
 * Assume **page** to be the page name
