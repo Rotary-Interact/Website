@@ -3,10 +3,11 @@ import process from 'node:process';
 import 'dotenv/config';
 
 const captchaActions: { [key: string]: number } = {
-  "create_room": 0.8,
-  "create_group": 0.7,
-  "join_room": 0.4,
-  "join_group": 0.6
+  "event_register": 0.7,
+  "event_deregister": 0.5,
+  "event_confirm": 0.6,
+  "login": 0.4,
+  "signup": 0.7
 }; //Action name: minimum score (0.0 to 1.0)
 
 async function captchaCheck(token: unknown, action: string): Promise<boolean> {

@@ -1,8 +1,8 @@
 'use strict';
 
 const errorTypes: { [key: number]: string[] } = {
-  400: ['Bad Request', 'Missing or invalid information sent to server(s).'],
-  401: ['Unauthorized', 'Your account login has expired. You may have been logged out from another device using your account.'],
+  400: ['Bad Request', 'Missing or invalid information entered.'],
+  401: ['Unauthorized', 'Your account login failed and may have expired. Try logging in again.'],
   403: ['Forbidden', 'Unauthorized usage or request.'],
   404: ['Resource Not Found', 'The requested page was not found.'],
   409: ['Conflict', 'Attempted to create a resource that already exists. Overwrite prevented.'],
@@ -10,6 +10,51 @@ const errorTypes: { [key: number]: string[] } = {
   500: ['Internal Server Error', 'You may try to repeat your request, or report this error and what you were doing prior to its occurrence.']
 }
 
+type Name = {
+  first: string;
+  last: string;
+};
+
+type Coordinates = {
+  lat: number;
+  long: number;
+};
+
+type Location = {
+  address: string;
+  coordinates?: Coordinates;
+  radius?: number;
+};
+
+type Grade = 9 | 10 | 11 | 12;
+
+type SchoolMonth = "September" | "October" | "November" | "December" | "January" | "February" | "March" | "April" | "May" | "June";
+
+type Credits = {
+  "OYO": number;
+  "Organized": OrganizedCredits;
+};
+
+type OrganizedCredits = {
+  "September": OrganizedCreditMonth;
+  "October": OrganizedCreditMonth;
+  "November": OrganizedCreditMonth;
+  "December": OrganizedCreditMonth;
+  "January": OrganizedCreditMonth;
+  "February": OrganizedCreditMonth;
+  "March": OrganizedCreditMonth;
+  "April": OrganizedCreditMonth;
+  "May": OrganizedCreditMonth;
+  "June": OrganizedCreditMonth;
+};
+
+type OrganizedCreditMonth = {
+  meeting: boolean;
+  events: number;
+};
+
 export {
-  errorTypes
+    errorTypes,
+    Name, Grade, Credits, OrganizedCredits, OrganizedCreditMonth, SchoolMonth,
+    Location, Coordinates
 };

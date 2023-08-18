@@ -1,15 +1,33 @@
 # NHS Rotary Website
 ### How to run: ```bash boot.sh```
+## For Rotary Event Officers
+### Creating an event
+### Finding event participants
+### ProximityParticipation
+ProximityParticipation is a special feature that allows members to earn credits for an event by visiting the event confirmation page.
+The URL of this page is "/events/{id}/confirm". On this page, the user enters their member ID and password.
+Next, their Geolocation is collected and compared with the location coordinates and radius in the event database.
+If within the radius of those coordinates, the member will receive credits. If not, the user will not receive credits.
+If one or more of the following event fields are left blank, ProximityParticipation is disabled and the member will not receive credits without manual verification in the database: "Location (Address)", "Location (Latitude Coordinates)", "Location (Longitude Coordinates)"
+
+This feature can prove convenient for you as a Rotary officer.
+On the other hand, however, this feature can easily be exploited.
+Therefore, I recommend monitoring "Verified Participant IDs" or "Verified Participant Names" in the event database.
+You can manually remove members from verified participants if a verification was fraudulent (only remove from "Verified Participant IDs").
+When the database is synchronized with the server, the removed verified participants will automatically have their credits updated accordingly.
+If you remove a participant from Participant IDs, however, it'll be as though they never signed up for the event in the first place, and they will not have credits deducted.
+Participants not in the confirmed participants field will have credits deducted until they are added manually or via ProximityParticipation.
 ## Components
 ### Events
-
+### Members
 ## About this codebase
 ### Back-end
 **Back-end code**: The code for the server is located in the /src directory.
 Contact David Fahim with questions: **dev@davidfahim.com**
-For many questions, schedule a 30 minute meeting. Please have your questions ready beforehand.
+
+For many questions, schedule a 30-minute meeting. Please have your questions ready beforehand.
 ### Front-end
-**Front-end code**: The the front-end is located in the /public directory.
+**Front-end code**: The front-end is located in the /public directory.
 Front-end code is divided into four folders: media, scripts, styles, and views. Every page should start with the code located in boilerplate.html. Let's examine this code together:
 * Every page specifies a title followed by "- NHS Rotary".
 * A custom-built templating engine on the server replaces anything wrapped in two curly braces with some HTML content in a JSON value that's mapped to that key on the server when loading the page. Every page by default has a value specified for {{page}} (the page's file name), {{metadata}}, {{header}}, and {{footer}}.

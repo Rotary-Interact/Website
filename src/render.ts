@@ -7,11 +7,13 @@ import { errorInfo } from "./errors.js";
 
 const metadata = fs.readFileSync(utils.__dirname + '/metadata.html', 'utf8');
 const footer = fs.readFileSync(utils.__dirname + '/footer.html', 'utf8');
+const header = fs.readFileSync(utils.__dirname + '/header.html', 'utf8');
 
 const template = (html: string, data: { [key: string]: any }): string => html.replace(/{{(\w*)}}/g, (m, key) => data.hasOwnProperty(key) ? data[key] : m);
 
+const sanitize = (html: string): string => html.replace(/<|>/g, '');
+
 const safeTemplate = (html: string, data: { [key: string]: any }): string => {
-  html = html.replace(/"{{(\w*)}}"/g, (m, key) => data.hasOwnProperty(key) ? String(data[key]).replace(/<|>|"/g, '') : m);
   html = html.replace(/{{(\w*)}}/g, (m, key) => data.hasOwnProperty(key) ? String(data[key]).replace(/<|>/g, '') : m);
   return html;
 };
@@ -40,7 +42,8 @@ function refresh(page: string, init: boolean = false): string | false { // Refre
     metadata: template(metadata, {
       page: page
     }),
-    footer: footer
+    header: header,
+    footer: footer,
   });
   pageData[page].time = time;
   setTimeout(function() {
@@ -51,4 +54,4 @@ function refresh(page: string, init: boolean = false): string | false { // Refre
 
 setInterval(() => time = Date.now(), 1000);
 
-export { errorPage, getPage, template, safeTemplate, time };
+export { errorPage, getPage, template, safeTemplate, sanitize, time };
