@@ -36,7 +36,7 @@ async function _getGoogleSheetClient(): Promise<sheets_v4.Sheets> {
 async function getEvent(id: string): Promise<any[]> {
     const res = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: eventSheet.ID,
-        range: eventSheet.tab,
+        range: `${eventSheet.tab}!A:A`,
     });
 
     const row: any[] = res.data.values.find(row => row[0] === id);
@@ -108,13 +108,26 @@ async function getMembers(): Promise<string[]> {
     }).splice(0, 1);
 }
 
-async function setMember(id: string, values: string[]): Promise<void> {
+async function getMemberIDsByEmail(email: string): Promise<string[]> {
     const res = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: memberSheet.ID,
         range: memberSheet.tab,
     });
 
-    const rowIndex = res.data.values.findIndex(row => row[1] === id);
+    const row: any[] = res.data.values.find(row => row[5] === email);
+
+    return res.data.values.map((value: any[]) => {
+        return value[1];
+    });
+}
+
+async function setMember(id: string, values: string[]): Promise<void> {
+    const res = await googleSheetClient.spreadsheets.values.get({
+        spreadsheetId: memberSheet.ID,
+        range: `${memberSheet.tab}!B:B`,
+    });
+
+    const rowIndex = res.data.values.findIndex(row => row[0] === id);
     if (rowIndex !== -1) {
         await googleSheetClient.spreadsheets.values.update({
             spreadsheetId: memberSheet.ID,
@@ -134,7 +147,7 @@ async function setMember(id: string, values: string[]): Promise<void> {
 async function updatePublicRecord(id: string, values: string[]): Promise<void> {
     const res = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: publicCreditSheet.ID,
-        range: publicCreditSheet.tab,
+        range: `${publicCreditSheet.tab}!A:A`,
     });
 
     const rowIndex = res.data.values.findIndex(row => row[0] === id);
@@ -161,6 +174,40 @@ async function updatePublicRecord(id: string, values: string[]): Promise<void> {
                 values: values,
             },
         });
+    }
+}
+
+async function getMembersAndPasswords(): Promise<[string, string][]> { //For db_maintainer.ts
+    const res = await googleSheetClient.spreadsheets.values.get({
+        spreadsheetId: memberSheet.ID,
+        range: memberSheet.tab,
+    });
+
+    return res.data.values.map((value: any[]): [string, string] => {
+        return [String(value[1]), String(value[2])];
+    }).splice(0, 1);
+}
+
+async function setMemberPassword(id: string, passwordHash: string): Promise<void> { //For db_maintainer.ts
+    const res = await googleSheetClient.spreadsheets.values.get({
+        spreadsheetId: memberSheet.ID,
+        range: `${memberSheet.tab}!B:B`,
+    });
+
+    const rowIndex = res.data.values.findIndex(row => row[0] === id);
+    if (rowIndex !== -1) {
+        await googleSheetClient.spreadsheets.values.update({
+            spreadsheetId: memberSheet.ID,
+            range: `${memberSheet.tab}!B${rowIndex + 1}:C${rowIndex + 1}`,
+            valueInputOption: 'USER_ENTERED',
+            includeValuesInResponse: false,
+        }, {
+            body: {
+                values: [id, passwordHash],
+            }
+        });
+    } else {
+        throw new Error(`404: Member with ID ${id} not found`);
     }
 }
 
@@ -203,6 +250,8 @@ async function populateIDs() {
 export {
     getEvents, getEvent, setEvent,
     getMembers, getMember, setMember,
+    getMemberIDsByEmail,
     updatePublicRecord,
-    populateIDs
+    populateIDs,
+    getMembersAndPasswords, setMemberPassword //For db_maintainer.ts
 }

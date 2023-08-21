@@ -1,10 +1,16 @@
 "use strict";
 import {randStr} from "./utils.js";
-import {populateIDs} from "./db_helper.js";
+import {populateIDs, getMembersAndPasswords, setMemberPassword} from "./db_helper.js";
 import {bcrypt} from "bcrypt";
 
 async function configureNewUsers() {
-
+    const members = await getMembersAndPasswords();
+    for (const [id, password] of members) {
+        if (!(password.slice(0, 4) === "$2a$" || password.slice(0, 4) === "$2b$")) {
+            const encryptedPassword: string = await encrypt(password, 10);
+            await setMemberPassword(id, encryptedPassword);
+        }
+    }
 }
 
 function encrypt(plaintextPassword, saltRounds): Promise<string> {
@@ -19,4 +25,10 @@ function encrypt(plaintextPassword, saltRounds): Promise<string> {
     });
 }
 
-await populateIDs(); //Run for each server startup
+async function maintain() {
+    await populateIDs(); //Run once for each server startup
+    await configureNewUsers();
+    setInterval(configureNewUsers, 10000); //Run every 10 seconds
+}
+
+export {maintain};

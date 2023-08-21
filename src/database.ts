@@ -36,6 +36,10 @@ async function getEventsByMember(memberID: string): Promise<{ [key: string]: Rot
     return memberEvents;
 }
 
+async function getMemberIDsByEmail(email: string): Promise<string[]> {
+    return await helper.getMemberIDsByEmail(email);
+}
+
 async function getMember(id: unknown, forceUpdate: boolean = true): Promise<Member> {
     if (typeof id !== "string") throw new Error("400: Invalid member ID");
     let member: Member = Members[id];
@@ -164,6 +168,7 @@ export {
     live,
     getEvents, getEvent,
     getMembers, getMember,
-    getEventsByMember
+    getEventsByMember,
+    getMemberIDsByEmail
 };
 

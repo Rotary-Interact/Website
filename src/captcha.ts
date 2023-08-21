@@ -6,8 +6,9 @@ const captchaActions: { [key: string]: number } = {
   "event_register": 0.7,
   "event_deregister": 0.5,
   "event_confirm": 0.6,
+  "get_id": 0.5,
   "login": 0.4,
-  "signup": 0.7
+  //"signup": 0.7,
 }; //Action name: minimum score (0.0 to 1.0)
 
 async function captchaCheck(token: unknown, action: string): Promise<boolean> {

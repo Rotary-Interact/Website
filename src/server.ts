@@ -2,7 +2,14 @@
 import { captchaCheck } from "./captcha.js";
 import { time, errorPage, getPage, template, safeTemplate, sanitize } from "./render.js";
 import { ErrInfo, parseError } from "./errors.js";
-import {validate, eventValidation, memberValidation, sessionValidation, loginValidation} from "./validators.js";
+import {
+  validate,
+  eventValidation,
+  memberValidation,
+  sessionValidation,
+  loginValidation,
+  emailValidation
+} from "./validators.js";
 import * as db from "./database.js";
 import { RotaryEvent } from "./events.js";
 import { Member } from "./members.js";
@@ -70,6 +77,7 @@ app.route('/login')
          - Form with fields whose action is to POST to this same route. Fields have name attributes of "member" (this is the member ID) and "password".
          - Link to signup ("https://forms.gle/mBDm3VDTCA42BAvB9")
          - Link to edit account password ("https://forms.gle/mBDm3VDTCA42BAvB9") (they should be signed into the same Google Account that they used to sign up and select "Edit your response")
+         - Form that asks for email address and submission sends a get request to "/get_id?email=[email]" (this is for if they forgot their member ID)
          */
         return res.status(200).send(getPage('login'));
       } catch (err) {
@@ -79,6 +87,7 @@ app.route('/login')
     })
     .post(loginValidation(), validate, async (req: Request, res: Response) => {
         try {
+            if (!(await captchaCheck(req.body['g-recaptcha-response'], 'login'))) throw new Error("498: ReCAPTCHA verification failed.");
             const member: Member = await db.getMember(req.body['member'], true);
             if (!await member.comparePassword(req.body['password'])) throw new Error("401: Incorrect password");
             const token: string = member.startSession();
@@ -273,6 +282,20 @@ app.route('/events/:id/deregister')
         return res.status(error.error).send(errorPage(error.error, error.message));
       }
     });
+
+app.get('/get_id', emailValidation(), validate, async (req: Request, res: Response) => {
+  try {
+    if (!(await captchaCheck(req.body['g-recaptcha-response'], 'get_id'))) throw new Error("498: ReCAPTCHA verification failed.");
+    const IDs: string[] = await db.getMemberIDsByEmail(req.query['email']);
+    return res.status(200).send(template(getPage('get_id'), {
+      IDs: IDs.join(', '),
+      email: req.query['email']
+    }));
+  } catch (err) {
+    const error: ErrInfo = parseError(err);
+    return res.status(error.error).send(errorPage(error.error, error.message));
+  }
+});
 
 /*
 //TODO: Future Feature
