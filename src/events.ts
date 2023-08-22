@@ -103,6 +103,13 @@ class RotaryEvent {
             catch (err) {
                 throw new Error("400: Invalid Event Participant IDs");
             }
+
+            try {
+                this.verifiedParticipants = new Set(info["Verified Participant IDs"].split(','));
+            }
+            catch (err) {
+                throw new Error("400: Invalid Event Verified Participant IDs");
+            }
         }
         catch (err) {
             const info: ErrInfo = parseError(err.message);
@@ -128,6 +135,10 @@ class RotaryEvent {
 
     get Description() {
         return this.description;
+    }
+
+    get Month() { //Month of event start
+        return ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][new Date(this.Start).getMonth()];
     }
 
     get Start() {
@@ -216,12 +227,20 @@ class RotaryEvent {
         return [...this.participants].join(",");
     }
 
-    public isRegistered(memberID: string): boolean {
-        return this.participants.has(memberID);
-    }
-
     get VerifiedParticipantIDs() {
         return [...this.verifiedParticipants].join(",");
+    }
+
+    get Attendees() {
+        return this.verifiedParticipants;
+    }
+
+    get NonAttendees() {
+        return new Set([...this.participants].filter(p => !this.verifiedParticipants.has(p)));
+    }
+
+    public isRegistered(memberID: string): boolean {
+        return this.participants.has(memberID);
     }
 
     public isVerified(memberID: string): boolean {
@@ -242,6 +261,10 @@ class RotaryEvent {
 
     get LockedDeregistrationPeriod() { //Hours before event start that deregistration is locked
         return this.lockedDeregistrationPeriod;
+    }
+
+    get Completed() {
+        return (new Date().getTime() > new Date(this.End).getTime());
     }
 
     public async Register(memberID: string): Promise<boolean> {
