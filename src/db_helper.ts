@@ -5,7 +5,7 @@ import {RotaryEvent} from "./events.js";
 import {Member} from "./members.js";
 import {randStr} from "./utils.js";
 
-const serviceAccountKeyFile = "./gc_service_account.json";
+const serviceAccountKeyFile = "../gc_service_account.json";
 const eventSheet = {
     ID: "1dveJGfTjeRw-DvdBjF54dY-9E4gRn3Yx-S8rJWuI4Ds",
     tab: "Main"
