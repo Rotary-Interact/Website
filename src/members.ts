@@ -177,6 +177,10 @@ class Member {
         return token;
     }
 
+    public getEvents(): Promise<{ [key: string]: RotaryEvent }> {
+        return db.getEventsByMember(this.ID);
+    }
+
     public validateSession(token: unknown): void {
         if (typeof token !== "string") throw new Error("401: Invalid session token");
         if (!this.isValidSession(token)) throw new Error("401: Invalid login")

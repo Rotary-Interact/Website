@@ -5,7 +5,8 @@
   "main": "core.js",
   "type": "module",
   "scripts": {
-    "start": "node core.js"
+    "start": "node core.js",
+    "test": "node test.js"
   },
   "keywords": [],
   "author": "",

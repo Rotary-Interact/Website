@@ -131,7 +131,7 @@ async function setMember(id: string, values: string[]): Promise<void> {
     if (rowIndex !== -1) {
         await googleSheetClient.spreadsheets.values.update({
             spreadsheetId: memberSheet.ID,
-            range: `${memberSheet.tab}!A${rowIndex + 1}:Z${rowIndex + 1}`,
+            range: `${memberSheet.tab}!A${rowIndex + 1}:AC${rowIndex + 1}`,
             valueInputOption: 'USER_ENTERED',
             includeValuesInResponse: false,
         }, {

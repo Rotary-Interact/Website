@@ -121,8 +121,7 @@ async function _getMemberDB(id: string): Promise<{ [key: string]: string }> {
 }
 
 async function _setMemberDB(id: string, member: Member): Promise<void> {
-    let updates: { [key: string]: string | number } = {
-        "Timestamp": "",
+    const updates: { [key: string]: string | number } = {
         "ID": member.ID,
         "Account Password": member.Password,
         "First Name": member.FirstName,
@@ -153,8 +152,35 @@ async function _setMemberDB(id: string, member: Member): Promise<void> {
         "June Events": member.EventCredits("June"),
     };
     await helper.setMember(id, Object(updates).values());
-    delete updates["Password"]; //Leave this line alone or everything goes to crap
-    await helper.updatePublicRecord(id, Object(updates).values());
+    const publicUpdates: { [key: string]: string | number } = {
+        "ID": member.ID,
+        "First Name": member.FirstName,
+        "Last Name": member.LastName,
+        "Email Address": member.Email,
+        "Grade": member.Grade,
+        "Total": member.TotalCredits,
+        "September Meeting": member.MeetingCredits("September"),
+        "September Events": member.EventCredits("September"),
+        "October Meeting": member.MeetingCredits("October"),
+        "October Events": member.EventCredits("October"),
+        "November Meeting": member.MeetingCredits("November"),
+        "November Events": member.EventCredits("November"),
+        "December Meeting": member.MeetingCredits("December"),
+        "December Events": member.EventCredits("December"),
+        "January Meeting": member.MeetingCredits("January"),
+        "January Events": member.EventCredits("January"),
+        "February Meeting": member.MeetingCredits("February"),
+        "February Events": member.EventCredits("February"),
+        "March Meeting": member.MeetingCredits("March"),
+        "March Events": member.EventCredits("March"),
+        "April Meeting": member.MeetingCredits("April"),
+        "April Events": member.EventCredits("April"),
+        "May Meeting": member.MeetingCredits("May"),
+        "May Events": member.EventCredits("May"),
+        "June Meeting": member.MeetingCredits("June"),
+        "June Events": member.EventCredits("June"),
+    };
+    await helper.updatePublicRecord(id, Object(publicUpdates).values());
 }
 
 const live: { [key: string]: Function } = {

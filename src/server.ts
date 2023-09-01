@@ -17,7 +17,6 @@ import express from 'express';
 const app = express();
 import * as http from 'http';
 const server = http.createServer(app);
-import { body, validationResult, check, param, query } from 'express-validator';
 import compression from 'compression';
 app.use(compression());
 import cors from 'cors';
@@ -32,7 +31,6 @@ import helmet from 'helmet';
 app.use(helmet.frameguard());
 
 import cookieParser from 'cookie-parser';
-import {log} from "util";
 app.use(cookieParser());
 
 app.use(express.json());
@@ -117,7 +115,7 @@ app.get('/dashboard', sessionValidation(), validate, async (req: Request, res: R
   try {
     const member: Member = await db.getMember(req.signedCookies['member'], true);
     member.validateSession(req.signedCookies['token']);
-    const events: { [key: string]: RotaryEvent } = await db.getEventsByMember(req.signedCookies['member']); //Events that the member is registered for
+    const events: { [key: string]: RotaryEvent } = await member.getEvents(); //Events that the member is registered for
     let HTML: string = ``;
     for (const [id, event] of Object.entries(events)) {
       HTML += `${event.Name}`; //TODO: Button or card with event summary that has link to page with full info ("/events/${event.ID}")
