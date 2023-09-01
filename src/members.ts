@@ -7,7 +7,8 @@ import {
     Coordinates,
     Location,
     Credits,
-    CreditMonth,
+    OrganizedCredits,
+    OrganizedCreditMonth,
     SchoolMonth
 } from "./definitions.js"
 import * as db from "./database.js";
@@ -71,7 +72,7 @@ class Member {
                 this.grade = 9;
             }
             
-            const credits: { [key: string]: CreditMonth } = {};
+            const organizedCredits: { [key: string]: OrganizedCreditMonth } = {};
             const months: string[] = ["September", "October", "November", "December", "January", "February", "March", "April", "May", "June"];
             for (const month of months) {
                 const meetingCredits: string = info[`${month} Meeting`];
@@ -82,12 +83,15 @@ class Member {
                 if (!isFloat(eventCredits)) {
                     throw new Error(`500: Invalid ${month} events credit amount (not a number). This may be caused by an incorrect manual entry of credits by a Rotary Officer. Contact a Rotary Officer for assistance.`);
                 }
-                credits[month] = {
+                organizedCredits[month] = {
                     meeting: (parseFloat(meetingCredits) === 0.5),
                     events: parseFloat(eventCredits),
                 }
             }
-            this.credits = <Credits>credits;
+            this.credits = {
+                "OYO": parseFloat(info["All Year OYO"]),
+                "Organized": <OrganizedCredits>organizedCredits
+            }
         }
         catch (err) {
             const info: ErrInfo = parseError(err.message);
@@ -140,8 +144,8 @@ class Member {
     }
 
     get TotalCredits() {
-        let total: number = 0;
-        for (const [month, credits] of Object.entries(this.credits)) {
+        let total: number = this.credits["OYO"];
+        for (const [month, credits] of Object.entries(this.credits["Organized"])) {
             total += (credits.meeting ? 0.5 : 0) + credits.events;
         }
         return total;
@@ -149,7 +153,7 @@ class Member {
 
     get TotalEventCredits() {
         let total: number = 0;
-        for (const [month, credits] of Object.entries(this.credits)) {
+        for (const [month, credits] of Object.entries(this.credits["Organized"])) {
             total += credits.events;
         }
         return total;
@@ -157,18 +161,22 @@ class Member {
 
     get TotalMeetingCredits() {
         let total: number = 0;
-        for (const [month, credits] of Object.entries(this.credits)) {
+        for (const [month, credits] of Object.entries(this.credits["Organized"])) {
             total += (credits.meeting ? 0.5 : 0);
         }
         return total;
     }
 
+    get OYOCredits() {
+        return this.credits["OYO"];
+    }
+
     public EventCredits(month: SchoolMonth): number {
-        return this.credits[month].events;
+        return this.credits["Organized"][month].events;
     }
 
     public MeetingCredits(month: SchoolMonth): 0.5 | 0 {
-        return (this.credits[month].meeting ? 0.5 : 0);
+        return (this.credits["Organized"][month].meeting ? 0.5 : 0);
     }
 
     public startSession(): string {
@@ -197,18 +205,6 @@ class Member {
         if (this.sessionTokens.length === 0) {
             delete Members[this.id];
         }
-    }
-
-    get Credits() {
-        return this.credits;
-    }
-
-    set Credits(credits: Credits) { //Updates credits IN MEMORY ONLY (not in DB)
-        this.credits = credits;
-    }
-
-    public async syncCredits() { //Pushes credits to DB
-        return db.live.setMember(this.ID, this);
     }
 }
 

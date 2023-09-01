@@ -2,11 +2,6 @@
 import {randStr} from "./utils.js";
 import {populateIDs, getMembersAndPasswords, setMemberPassword} from "./db_helper.js";
 import {bcrypt} from "bcrypt";
-import {getEvents, getMembers} from "./database.js";
-import {Member} from "./members.js";
-import {RotaryEvent} from "./events.js";
-import * as db from "./database.js";
-import {Credits} from "./definitions.js";
 
 async function configureNewUsers() {
     const members = await getMembersAndPasswords();
@@ -30,42 +25,10 @@ function encrypt(plaintextPassword, saltRounds): Promise<string> {
     });
 }
 
-async function syncCredits() {
-    const events: { [key: string]: RotaryEvent } = await getEvents();
-    const members: Set<Member> = new Set<Member>();
-    for (const [id, event] of Object.entries(events)) {
-        await event.dbPull();
-        if (!event.Completed) continue;
-        const attendees: Set<string> = event.Attendees;
-        const nonAttendees: Set<string> = event.NonAttendees;
-
-        for (const memberID of attendees) {
-            const member: Member = await db.getMember(memberID, true);
-            member.Credits[event.Month].events += event.Credits;
-            members.add(member);
-        }
-
-        for (const memberID of nonAttendees) {
-            const member: Member = await db.getMember(memberID, true);
-            member.Credits[event.Month].events -= event.Credits;
-            members.add(member);
-        }
-    }
-
-    for (const [id, member] of Object.entries(members)) {
-        let credits: Credits = member.Credits; //Hold onto in-memory credits
-        await member.dbPull(); //Pull any updates from DB (overwriting in-memory credits as a side effect).
-        member.Credits = credits; //Restore credits
-        await member.syncCredits();
-    }
-}
-
 async function maintain() {
     await populateIDs(); //Run once for each server startup
     await configureNewUsers();
-    await syncCredits();
     setInterval(configureNewUsers, 10000); //Run every 10 seconds
-    setInterval(syncCredits, 60000); //Run every minute
 }
 
 export {maintain};

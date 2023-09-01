@@ -98,8 +98,7 @@ function _setEventDB(id: string, event: RotaryEvent): Promise<void> {
     return helper.setEvent(id, Object(updates).values());
 }
 
-const member_db_columns: string[] = ["Timestamp", "ID", "Account Password", "First Name", "Last Name", "Email Address", "Phone Number", "Grade",
-    "Total",
+const member_db_columns: string[] = ["Timestamp", "ID", "Account Password", "First Name", "Last Name", "Email Address", "Phone Number", "Grade", "Total", "All Year OYO",
     "September Meeting", "September Events",
     "October Meeting", "October Events",
     "November Meeting", "November Events",
@@ -130,6 +129,7 @@ async function _setMemberDB(id: string, member: Member): Promise<void> {
         "Phone Number": member.Phone,
         "Grade": member.Grade,
         "Total": member.TotalCredits,
+        "All Year OYO": member.OYOCredits,
         "September Meeting": member.MeetingCredits("September"),
         "September Events": member.EventCredits("September"),
         "October Meeting": member.MeetingCredits("October"),

@@ -29,46 +29,32 @@ type Location = {
 type Grade = 9 | 10 | 11 | 12;
 
 type SchoolMonth = "September" | "October" | "November" | "December" | "January" | "February" | "March" | "April" | "May" | "June";
-/*
+
 type Credits = {
   "OYO": number;
   "Organized": OrganizedCredits;
 };
 
 type OrganizedCredits = {
-  "September": CreditMonth;
-  "October": CreditMonth;
-  "November": CreditMonth;
-  "December": CreditMonth;
-  "January": CreditMonth;
-  "February": CreditMonth;
-  "March": CreditMonth;
-  "April": CreditMonth;
-  "May": CreditMonth;
-  "June": CreditMonth;
-};
-*/
-
-type Credits = {
-  "September": CreditMonth;
-  "October": CreditMonth;
-  "November": CreditMonth;
-  "December": CreditMonth;
-  "January": CreditMonth;
-  "February": CreditMonth;
-  "March": CreditMonth;
-  "April": CreditMonth;
-  "May": CreditMonth;
-  "June": CreditMonth;
+  "September": OrganizedCreditMonth;
+  "October": OrganizedCreditMonth;
+  "November": OrganizedCreditMonth;
+  "December": OrganizedCreditMonth;
+  "January": OrganizedCreditMonth;
+  "February": OrganizedCreditMonth;
+  "March": OrganizedCreditMonth;
+  "April": OrganizedCreditMonth;
+  "May": OrganizedCreditMonth;
+  "June": OrganizedCreditMonth;
 };
 
-type CreditMonth = {
+type OrganizedCreditMonth = {
   meeting: boolean;
   events: number;
 };
 
 export {
     errorTypes,
-    Name, Grade, Credits, CreditMonth, SchoolMonth,
+    Name, Grade, Credits, OrganizedCredits, OrganizedCreditMonth, SchoolMonth,
     Location, Coordinates
 };
