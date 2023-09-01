@@ -132,6 +132,9 @@ dist
 #Mac folder file
 .DS_Store
 
+#Google Cloud Service Account
+gc_service_account.json
+
 #Typescript output
 *.js
 
