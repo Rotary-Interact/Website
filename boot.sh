@@ -1,5 +1,5 @@
-npm install -g npm
-npm install -g typescript
+#sudo npm install -g npm@latest
+#sudo npm install -g typescript@latest
 
 echo TypeScript Version
 tsc --version

@@ -19,10 +19,11 @@ async function getEvent(id: unknown, forceUpdate: boolean = true): Promise<Rotar
 
 async function getEvents(): Promise<{ [key: string]: RotaryEvent }> {
     const IDs: string[] = await helper.getEvents();
+    const events: { [key: string]: RotaryEvent } = {};
     for (const id of IDs) {
-        await getEvent(id, false);
+        events[id] = await getEvent(id, false);
     }
-    return RotaryEvents;
+    return events;
 }
 
 async function getEventsByMember(memberID: string): Promise<{ [key: string]: RotaryEvent }> {
@@ -66,8 +67,8 @@ const event_db_columns: string[] = ["ID", "Name", "Description", "Start", "End",
 async function _getEventDB(id: string): Promise<{ [key: string]: string }> {
     let values: any[] = await helper.getEvent(id);
     let data: { [key: string]: string } = {};
-    for (let i = 0; i < values.length; i++) {
-        data[event_db_columns[i]] = String(values[i]);
+    for (let i = 0; i < event_db_columns.length; i++) {
+        data[event_db_columns[i]] = !!values[i] ? String(values[i]) : "";
     }
     return data;
 }
@@ -95,7 +96,7 @@ function _setEventDB(id: string, event: RotaryEvent): Promise<void> {
         "Verified Participant IDs": event.VerifiedParticipantIDs,
         "Locked Deregistration Period": String(event.LockedDeregistrationPeriod),
     };
-    return helper.setEvent(id, Object(updates).values());
+    return helper.setEvent(id, Object.values(updates));
 }
 
 const member_db_columns: string[] = ["Timestamp", "ID", "Account Password", "First Name", "Last Name", "Email Address", "Phone Number", "Grade",
@@ -114,14 +115,15 @@ const member_db_columns: string[] = ["Timestamp", "ID", "Account Password", "Fir
 async function _getMemberDB(id: string): Promise<{ [key: string]: string }> {
     let values: any[] = await helper.getMember(id);
     let data: { [key: string]: string } = {};
-    for (let i = 0; i < values.length; i++) {
-        data[member_db_columns[i]] = String(values[i]);
+    for (let i = 0; i < member_db_columns.length; i++) {
+        data[member_db_columns[i]] = !!values[i] ? String(values[i]) : "";
     }
     return data;
 }
 
 async function _setMemberDB(id: string, member: Member): Promise<void> {
     const updates: { [key: string]: string | number } = {
+        "Timestamp": null,
         "ID": member.ID,
         "Account Password": member.Password,
         "First Name": member.FirstName,
@@ -151,7 +153,7 @@ async function _setMemberDB(id: string, member: Member): Promise<void> {
         "June Meeting": member.MeetingCredits("June"),
         "June Events": member.EventCredits("June"),
     };
-    await helper.setMember(id, Object(updates).values());
+    await helper.setMember(id, Object.values(updates));
     const publicUpdates: { [key: string]: string | number } = {
         "ID": member.ID,
         "First Name": member.FirstName,
@@ -180,7 +182,7 @@ async function _setMemberDB(id: string, member: Member): Promise<void> {
         "June Meeting": member.MeetingCredits("June"),
         "June Events": member.EventCredits("June"),
     };
-    await helper.updatePublicRecord(id, Object(publicUpdates).values());
+    await helper.updatePublicRecord(id, Object.values(publicUpdates));
 }
 
 const live: { [key: string]: Function } = {

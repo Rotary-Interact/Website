@@ -1,7 +1,7 @@
 "use strict";
 import {randStr} from "./utils.js";
 import {populateIDs, getMembersAndPasswords, setMemberPassword} from "./db_helper.js";
-import {bcrypt} from "bcrypt";
+import * as bcrypt from "bcrypt";
 import {getEvents, getMembers} from "./database.js";
 import {Member} from "./members.js";
 import {RotaryEvent} from "./events.js";
@@ -52,10 +52,7 @@ async function syncCredits() {
         }
     }
 
-    for (const [id, member] of Object.entries(members)) {
-        let credits: Credits = member.Credits; //Hold onto in-memory credits
-        await member.dbPull(); //Pull any updates from DB (overwriting in-memory credits as a side effect).
-        member.Credits = credits; //Restore credits
+    for (const member of Object.values(members)) {
         await member.syncCredits();
     }
 }

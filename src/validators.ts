@@ -19,7 +19,7 @@ const validate = (req, res, next) => {
 const eventValidation = (): ValidationChain[] => {
   return [
     param("event").notEmpty().isString()
-      .isLength({ min: 5, max: 5 }).withMessage("Invalid event ID length")
+      .isLength({ min: 7, max: 7 }).withMessage("Invalid event ID length")
       .matches(/^[a-zA-Z0-9]+$/).withMessage("Event ID contains invalid characters (may only contain alphanumeric characters)")
   ];
 }
@@ -27,7 +27,7 @@ const eventValidation = (): ValidationChain[] => {
 const memberValidation = (): ValidationChain[] => {
   return [
     param("member").notEmpty().isString()
-        .isLength({ min: 7, max: 7 }).withMessage("Invalid member ID length")
+        .isLength({ min: 5, max: 5 }).withMessage("Invalid member ID length")
         .matches(/^[a-zA-Z0-9]+$/).withMessage("Member ID contains invalid characters (may only contain alphanumeric characters)")
   ];
 }
@@ -37,7 +37,7 @@ const memberValidation = (): ValidationChain[] => {
 const sessionValidation = (): ValidationChain[] => {
   return [
     cookie("member").notEmpty().withMessage("Missing member ID. Please login again.").isString().withMessage("Invalid member ID. Please login again.")
-        .isLength({ min: 7, max: 7 }).withMessage("Invalid member ID. Please login again.")
+        .isLength({ min: 5, max: 5 }).withMessage("Invalid member ID. Please login again.")
         .matches(/^[a-zA-Z0-9]+$/).withMessage("Invalid member ID. Please login again."),
     cookie("token").notEmpty().withMessage("Missing token. Please login again.").isString().withMessage("Invalid token. Please login again.")
         .isLength({ min: 64, max: 64 }).withMessage("Invalid token. Please login again.")
@@ -48,7 +48,7 @@ const sessionValidation = (): ValidationChain[] => {
 const loginValidation = (): ValidationChain[] => {
   return [
     body("member").notEmpty().withMessage("Missing member ID. Please login again.").isString().withMessage("Invalid member ID. Please login again.")
-        .isLength({ min: 7, max: 7 }).withMessage("Invalid member ID. Please login again.")
+        .isLength({ min: 5, max: 5 }).withMessage("Invalid member ID. Please login again.")
         .matches(/^[a-zA-Z0-9]+$/).withMessage("Invalid member ID. Please login again."),
     body("password").notEmpty().withMessage("Missing password. Please login again.").isString().withMessage("Invalid password. Please login again.")
         .isLength({ min: 8, max: 32 }).withMessage("Invalid password (must be 8 to 32 characters). Please login again.")

@@ -4,8 +4,10 @@ import {OAuth2Client} from "google-auth-library";
 import {RotaryEvent} from "./events.js";
 import {Member} from "./members.js";
 import {randStr} from "./utils.js";
+import {customAlphabet} from 'nanoid'
+const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
 
-const serviceAccountKeyFile = "../gc_service_account.json";
+const serviceAccountKeyFile = "./gc_service_account.json";
 const eventSheet = {
     ID: "1dveJGfTjeRw-DvdBjF54dY-9E4gRn3Yx-S8rJWuI4Ds",
     tab: "Main"
@@ -36,7 +38,7 @@ async function _getGoogleSheetClient(): Promise<sheets_v4.Sheets> {
 async function getEvent(id: string): Promise<any[]> {
     const res = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: eventSheet.ID,
-        range: `${eventSheet.tab}!A:A`,
+        range: eventSheet.tab,
     });
 
     const row: any[] = res.data.values.find(row => row[0] === id);
@@ -51,35 +53,39 @@ async function getEvent(id: string): Promise<any[]> {
 async function getEvents(): Promise<string[]> {
     const res = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: eventSheet.ID,
-        range: eventSheet.tab,
+        range: `${eventSheet.tab}!A:A`,
     });
 
     return res.data.values.map((value: any[]) => {
         return value[0];
-    }).splice(0, 1);
+    }).slice(1); // Exclude header row
 }
 
-async function setEvent(id: string, values: string[]): Promise<void> {
+async function setEvent(id: string, values: (string | number)[]): Promise<void> {
     const res = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: eventSheet.ID,
-        range: eventSheet.tab,
+        range: `${eventSheet.tab}!A:A`,
     });
 
     const rowIndex = res.data.values.findIndex(row => row[0] === id);
     if (rowIndex !== -1) {
-        await googleSheetClient.spreadsheets.values.update({
-            spreadsheetId: eventSheet.ID,
-            range: `${eventSheet.tab}!A${rowIndex + 1}:Z${rowIndex + 1}`,
-            valueInputOption: 'USER_ENTERED',
-            includeValuesInResponse: false,
-        }, {
-            body: {
-                values: values,
-            }
-        });
+        return setEventRow(rowIndex, values);
     } else {
         throw new Error(`404: Event with ID ${id} not found`);
     }
+}
+
+async function setEventRow(rowIndex: number, values: (string | number)[]): Promise<void> {
+    await googleSheetClient.spreadsheets.values.update({
+        spreadsheetId: eventSheet.ID,
+        range: `${eventSheet.tab}!A${rowIndex + 1}:T${rowIndex + 1}`,
+        valueInputOption: 'USER_ENTERED',
+        includeValuesInResponse: false,
+    }, {
+        body: JSON.stringify({
+            values: [values]
+        })
+    });
 }
 
 async function getMember(id: string): Promise<any[]> {
@@ -100,12 +106,12 @@ async function getMember(id: string): Promise<any[]> {
 async function getMembers(): Promise<string[]> {
     const res = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: memberSheet.ID,
-        range: memberSheet.tab,
+        range: `${memberSheet.tab}!B:B`,
     });
 
     return res.data.values.map((value: any[]) => {
-        return value[1];
-    }).splice(0, 1);
+        return value[0];
+    }).slice(1); // Exclude header row
 }
 
 async function getMemberIDsByEmail(email: string): Promise<string[]> {
@@ -121,30 +127,35 @@ async function getMemberIDsByEmail(email: string): Promise<string[]> {
     });
 }
 
-async function setMember(id: string, values: string[]): Promise<void> {
+async function setMember(id: string, values: (string | number)[]): Promise<void> {
     const res = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: memberSheet.ID,
         range: `${memberSheet.tab}!B:B`,
     });
 
     const rowIndex = res.data.values.findIndex(row => row[0] === id);
+
     if (rowIndex !== -1) {
-        await googleSheetClient.spreadsheets.values.update({
-            spreadsheetId: memberSheet.ID,
-            range: `${memberSheet.tab}!A${rowIndex + 1}:AC${rowIndex + 1}`,
-            valueInputOption: 'USER_ENTERED',
-            includeValuesInResponse: false,
-        }, {
-            body: {
-                values: values,
-            }
-        });
+    return setMemberRow(rowIndex, values);
     } else {
         throw new Error(`404: Member with ID ${id} not found`);
     }
 }
 
-async function updatePublicRecord(id: string, values: string[]): Promise<void> {
+async function setMemberRow(rowIndex: number, values: (string | number)[]): Promise<void> {
+    await googleSheetClient.spreadsheets.values.update({
+        spreadsheetId: memberSheet.ID,
+        range: `${memberSheet.tab}!A${rowIndex + 1}:AC${rowIndex + 1}`,
+        valueInputOption: 'USER_ENTERED',
+        includeValuesInResponse: false,
+    }, {
+        body: JSON.stringify({
+            values: [values]
+        })
+    });
+}
+
+async function updatePublicRecord(id: string, values: (string | number)[]): Promise<void> {
     const res = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: publicCreditSheet.ID,
         range: `${publicCreditSheet.tab}!A:A`,
@@ -158,9 +169,9 @@ async function updatePublicRecord(id: string, values: string[]): Promise<void> {
             valueInputOption: 'USER_ENTERED',
             includeValuesInResponse: false,
         }, {
-            body: {
-                values: values,
-            }
+            body: JSON.stringify({
+                values: [values]
+            })
         });
     } else {
         await googleSheetClient.spreadsheets.values.append({
@@ -169,10 +180,10 @@ async function updatePublicRecord(id: string, values: string[]): Promise<void> {
             valueInputOption: 'USER_ENTERED',
             insertDataOption: 'INSERT_ROWS',
         }, {
-            body: {
+            body: JSON.stringify({
                 "majorDimension": "ROWS",
                 values: values,
-            },
+            }),
         });
     }
 }
@@ -185,7 +196,7 @@ async function getMembersAndPasswords(): Promise<[string, string][]> { //For db_
 
     return res.data.values.map((value: any[]): [string, string] => {
         return [String(value[1]), String(value[2])];
-    }).splice(0, 1);
+    }).slice(1); // Exclude header row
 }
 
 async function setMemberPassword(id: string, passwordHash: string): Promise<void> { //For db_maintainer.ts
@@ -202,9 +213,9 @@ async function setMemberPassword(id: string, passwordHash: string): Promise<void
             valueInputOption: 'USER_ENTERED',
             includeValuesInResponse: false,
         }, {
-            body: {
-                values: [id, passwordHash],
-            }
+            body: JSON.stringify({
+                values: [[id, passwordHash]],
+            })
         });
     } else {
         throw new Error(`404: Member with ID ${id} not found`);
@@ -215,35 +226,55 @@ async function populateIDs() {
     // For members
     const memberRes = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: memberSheet.ID,
-        range: memberSheet.tab,
+        range: `${memberSheet.tab}!B:B`,
     });
     const memberIDs: Set<string> = new Set();
-    for (const row of memberRes.data.values) {
-        if (typeof row[1] === "string" && row[1].length === 7) continue;
+    for (let i = 1; i < memberRes.data.values.length; i++) { // Skip header row
+        const row = memberRes.data.values[i];
+        if (typeof row[0] === "string" && row[0].length === 5) continue;
         let id;
         do {
-            id = randStr(7);
+            id = nanoid(5);
         } while (memberIDs.has(id)); // ID must be unique
         memberIDs.add(id);
-        row[1] = id;
-        await setMember(id, row);
+        row[0] = id;
+        await googleSheetClient.spreadsheets.values.update({
+            spreadsheetId: memberSheet.ID,
+            range: `${memberSheet.tab}!B${i + 1}:B${i + 1}`,
+            valueInputOption: 'USER_ENTERED',
+            includeValuesInResponse: false,
+        }, {
+            body: JSON.stringify({
+                values: [[id]],
+            })
+        });
     }
 
     // For events
     const eventRes = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: eventSheet.ID,
-        range: eventSheet.tab,
+        range: `${eventSheet.tab}!A:A`,
     });
     const eventIDs = new Set();
-    for (const row of eventRes.data.values) {
+    for (let i = 1; i < eventRes.data.values.length; i++) { // Skip header row
+        const row = eventRes.data.values[i];
         if (typeof row[0] === "string" && row[0].length === 7) continue;
         let id;
         do {
-            id = randStr(5);
+            id = nanoid(7);
         } while (eventIDs.has(id)); // ID must be unique
         eventIDs.add(id);
         row[0] = id;
-        await setEvent(id, row);
+        await googleSheetClient.spreadsheets.values.update({
+            spreadsheetId: eventSheet.ID,
+            range: `${eventSheet.tab}!A${i + 1}:A${i + 1}`,
+            valueInputOption: 'USER_ENTERED',
+            includeValuesInResponse: false,
+        }, {
+            body: JSON.stringify({
+                values: [[id]],
+            })
+        });
     }
 }
 

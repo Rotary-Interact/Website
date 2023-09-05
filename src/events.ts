@@ -27,10 +27,10 @@ class RotaryEvent {
     private lockedDeregistrationPeriod: number;
     private image: string;
 
-    static async toMemory(id: string): Promise<RotaryEvent> { //Creates replica in memory of entity in DB
-        if (RotaryEvents[id] !== null) return RotaryEvents[id]; //throw new Error("409: An event with this ID already exists.");
+    static async toMemory(id: string): Promise<RotaryEvent> { // Creates in-memory replica of entity in DB
+        if (!!RotaryEvents[id]) return RotaryEvents[id]; //throw new Error("409: An event with this ID already exists.");
         const event: RotaryEvent = new RotaryEvent(id);
-        await event.dbPull();
+        await event.dbPull(true);
         RotaryEvents[event.ID] = event;
         return event;
     }
@@ -47,34 +47,23 @@ class RotaryEvent {
     }
 
     private async dbPuller() {
+        this.syncTime = new Date().getTime();
         try {
             const info: { [key: string]: string } = await db.live.getEvent(this.id);
             this.name = info["Name"];
             this.description = info["Description"];
 
-            try {
-                this.start = new Date(info["Start"]).toLocaleString('en-US', { timeZone: 'EST' });
-            }
-            catch (err) {
-                this.start = "Unspecified"
-            }
-            try {
-                this.end = new Date(info["End"]).toLocaleString('en-US', { timeZone: 'EST' });
-            }
-            catch (err) {
-                this.end = "Unspecified"
-            }
+            this.start = new Date(info["Start"]).toLocaleString('en-US', { timeZone: 'EST' });
+            this.end = new Date(info["End"]).toLocaleString('en-US', { timeZone: 'EST' });
 
-            try {
-                this.duration = (new Date(this.end).getTime() - new Date(this.start).getTime()) / 60000;
-            }
-            catch (err) {
+            this.duration = (new Date(this.end).getTime() - new Date(this.start).getTime()) / 60000;
+            if (!isInteger(this.duration)) {
                 this.duration = 0;
             }
 
             this.location = {
                 address: info["Location (Address)"]
-            };
+            }
             if (isNumeric(info["Location (Latitude Coordinates)"]) && isNumeric(info["Location (Longitude Coordinates)"]) && isNumeric(info["Location (Radius)"])) {
                 this.ProximityParticipation = true;
                 this.location.coordinates = {
@@ -98,14 +87,18 @@ class RotaryEvent {
             this.image = ((info["Image"] === null || info["Image"] === "") ? "/media/logo.webp" : info["Image"]);
 
             try {
-                this.participants = new Set(info["Participant IDs"].split(','));
+                let participants: string[] = info["Participant IDs"].split(',');
+                participants = participants.splice(participants.indexOf("") + 1, 1);
+                this.participants = new Set(participants);
             }
             catch (err) {
                 throw new Error("400: Invalid Event Participant IDs");
             }
 
             try {
-                this.verifiedParticipants = new Set(info["Verified Participant IDs"].split(','));
+                let verifiedParticipants: string[] = info["Verified Participant IDs"].split(',');
+                verifiedParticipants = verifiedParticipants.splice(verifiedParticipants.indexOf("") + 1, 1);
+                this.verifiedParticipants = new Set(verifiedParticipants);
             }
             catch (err) {
                 throw new Error("400: Invalid Event Verified Participant IDs");
@@ -116,7 +109,7 @@ class RotaryEvent {
             if (info.error === 404) {
                 delete RotaryEvents[this.ID];
             }
-            throw err;
+            throw new Error(info.message + " | Event ID: " + this.ID);
         }
     }
 
@@ -124,8 +117,8 @@ class RotaryEvent {
         return this.id;
     }
 
-    get Age() { //Seconds since dbPuller called
-        if (!this.syncTime) return 0;
+    get Age() { // Seconds since dbPull called
+        if (!isInteger(this.syncTime)) return 0;
         return (new Date().getTime() - this.syncTime) / 1000;
     }
 
@@ -165,11 +158,11 @@ class RotaryEvent {
     }
 
     get Latitude() {
-        return this.location.coordinates.lat;
+        return !!this.location.coordinates ? (!!this.location.coordinates.lat ? this.location.coordinates.lat : 0) : 0;
     }
 
     get Longitude() {
-        return this.location.coordinates.lat;
+        return !!this.location.coordinates ? (!!this.location.coordinates.long ? this.location.coordinates.long : 0) : 0;
     }
 
     get Radius() {
@@ -252,7 +245,7 @@ class RotaryEvent {
     }
 
     get Full() {
-        return (this.Spots <= 0);
+        return (this.RemainingSpots <= 0);
     }
 
     get Image() {
@@ -276,20 +269,33 @@ class RotaryEvent {
         //Event is full
         if (this.Full) return false;
 
-        //Event has an invalid start time
-        try {
-            new Date(this.start);
-        }
-        catch (err) {
-            throw new Error("500: This event does not have a valid start time. Please contact the event's Rotary officer.")
-        }
+        //Event has an invalid end time
+        if (this.End === "Invalid Date") throw new Error("500: This event does not have a valid end time. Please contact the event's Rotary officer.");
 
         //Event has already started
-        if (new Date().getTime() > new Date(this.start).getTime()) {
-            throw new Error("400: This event has already started. You may contact the event's Rotary officer to register for this event.");
-        }
+        if (new Date().getTime() > new Date(this.End).getTime()) throw new Error("400: This event has already ended. You may contact the event's Rotary officer to register for this event.");
 
         this.participants.add(memberID);
+        await db.live.setEvent(this.ID, this);
+        return true;
+    }
+
+    public async Verify(memberID: string): Promise<boolean> {
+        await this.dbPull();
+
+        //User isn't registered
+        if (!this.isRegistered(memberID)) throw new Error("400: You aren't registered for this event.");
+
+        //User is already verified
+        if (this.isVerified(memberID)) throw new Error("400: You are already a verified participant in this event.");
+
+        //Event has an invalid start time
+        if (this.Start === "Invalid Date") throw new Error("500: This event does not have a valid start time. Please contact the event's Rotary officer.");
+
+        //Event hasn't already started
+        if (new Date().getTime() < new Date(this.Start).getTime()) throw new Error("400: This event hasn't started. You may contact the event's Rotary officer to verify your participation in this event before the start time.");
+
+        this.verifiedParticipants.add(memberID);
         await db.live.setEvent(this.ID, this);
         return true;
     }
@@ -306,10 +312,11 @@ class RotaryEvent {
             }
         }
         catch (err) {
-            //Just move on and let the user deregister if the start time was invalid or deregistration period was invalid and thus, 0.
+            //Just move on and let the user deregister if the start time was invalid or deregistration period was invalid and thus treated as 0.
         }
 
         this.participants.delete(memberID);
+        this.verifiedParticipants.delete(memberID); // Just in case
         await db.live.setEvent(this.ID, this);
         return true;
     }

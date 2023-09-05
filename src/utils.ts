@@ -5,8 +5,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const path = (__dirname).replace('/src', '');
 
 function isNumeric(str: unknown): boolean {
-  if (typeof str == "number") return true;
-  if (typeof str != "string") return false;
+  if (typeof str === "number" && !isNaN(str)) return true;
+  if (typeof str !== "string") return false;
   try {
     return (!isNaN(parseFloat(str)));
   }
@@ -16,9 +16,8 @@ function isNumeric(str: unknown): boolean {
 }
 
 function isInteger(str: unknown): boolean {
-  if (typeof str == "number") return true;
-  if (typeof str != "string") return false;
-  if (!isNumeric(str)) return false;
+  if (typeof str === "number" && !isNaN(str)) return true;
+  if (typeof str !== "string") return false;
   try {
     return (!isNaN(parseInt(str)));
   }

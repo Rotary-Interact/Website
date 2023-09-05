@@ -1,9 +1,37 @@
 # NHS Rotary Website
 ### How to run: ```bash boot.sh```
-## For Rotary Event Officers
+## For Rotary Officers
+Rotary Officers will only ever need to access the Event Database for manual editing.
+They should **never** view, edit, or open the Member Database.
+They should **never** directly edit the Rotary Credit Spreadsheet. Updates will be made by the website based on edits in the Event Database.
+Rotary Officers should never create, rearrange, rename, or delete columns in the either databases or the Rotary Credit Spreadsheet.
 ### Creating an event
+To create an event:
+- Open the Event Database spreadsheet.
+- Navigate to the Staging (not Main) sheet/tab.
+- Enter the event details. Select the top cell in each column for an explanation of the column.
+- It is the responsibility of the officers to ensure that the event details are correct and that the data is valid per the column descriptions.
+- When the event is ready to be published (e.g., at the next meeting), copy/paste the row of the event to the Main sheet/tab.
 ### Finding event participants
-### ProximityParticipation
+To find event participants and their contact information:
+- Open the Event Database spreadsheet.
+- Navigate to the Main (not Staging) sheet/tab.
+- Find the event in the spreadsheet.
+- Find the "Participant IDs" column which contains the IDs of the participants.
+- Find participant contact information associated with each ID in the Rotary Credit Spreadsheet (**NOT** the Member Database).
+### Updating credits and member participation
+To update credits based on member participation (when a registered participant attends the event):
+- Copy/paste (but do not move or cut/paste) the ID of the participant from the "Participant IDs" column to the "Verified Participant IDs" column.
+- Members whose IDs are in the "Verified Participant IDs" column will automatically gain the credits specified in the "Credits" column in under 10 minutes if the server is running and if the event end time has passed (specified by the "End" column).
+- Members whose IDs are in the "Participant IDs" but not the "Verified Participant IDs" column (members who registered but did not attend) will automatically lose the credits specified in the "Credits" column in under 10 minutes if the server is running and if the event end time has passed (specified by the "End" column).
+For this reason, immediately after an event has finished, members may notice a credit deduction until the officers add their ID to the "Verified Participant IDs" column.
+### Downtime Procedure
+When the website fails to operate as expected:
+- Contact the Rotary Technology Officers
+- In the meantime, manually register participants by entering their IDs under the "Participant IDs" column in the Event Database with each ID **seperated by a comma without a space**.
+- When the website is back up, the website will automatically update and the participants' credits will be synchronized.
+- Continue to verify member participation in the same manner as usual. Credits will not update or synchronize until the website is up again.
+### ProximityParticipation (in progress)
 ProximityParticipation is a special feature that allows members to earn credits for an event by visiting the event confirmation page.
 The URL of this page is "/events/{id}/confirm". On this page, the user enters their member ID and password.
 Next, their Geolocation is collected and compared with the location coordinates and radius in the event database.
