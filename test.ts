@@ -104,4 +104,5 @@ await idFetchTest(member1);
 await idFetchTest(member2);
 await meetingParticipationTest(member1);
 await meetingParticipationTest(member2);
+console.log("All tests passed!");
 process.exit(0);

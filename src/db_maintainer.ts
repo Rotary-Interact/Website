@@ -2,7 +2,6 @@
 import {randStr} from "./utils.js";
 import {populateIDs, getMembersAndPasswords, setMemberPassword} from "./db_helper.js";
 import * as bcrypt from "bcrypt";
-import {getEvents, getMembers} from "./database.js";
 import {Member} from "./members.js";
 import {RotaryEvent} from "./events.js";
 import * as db from "./database.js";
@@ -31,7 +30,7 @@ function encrypt(plaintextPassword, saltRounds): Promise<string> {
 }
 
 async function syncCredits() {
-    const events: { [key: string]: RotaryEvent } = await getEvents();
+    const events: { [key: string]: RotaryEvent } = await db.getEvents();
     const members: Set<Member> = new Set<Member>();
     for (const [id, event] of Object.entries(events)) {
         await event.dbPull();
@@ -52,8 +51,15 @@ async function syncCredits() {
         }
     }
 
-    for (const member of Object.values(members)) {
+    /*for (const member of Object.values(members)) {
         await member.syncCredits();
+    }*/ //NOT needed as long as syncMembers() syncs credits for every member
+}
+
+async function syncMembers() {
+    const members: { [key: string]: Member } = await db.getMembers();
+    for (const member of Object.values(members)) {
+        member.syncCredits();
     }
 }
 
@@ -61,8 +67,11 @@ async function maintain() {
     await populateIDs(); //Run once for each server startup
     await configureNewUsers();
     await syncCredits();
+    await syncMembers();
     setInterval(configureNewUsers, 10000); //Run every 10 seconds
     setInterval(syncCredits, 60000); //Run every minute
+    setInterval(syncMembers, 60000); //Run every minute
+  
 }
 
 export {maintain};

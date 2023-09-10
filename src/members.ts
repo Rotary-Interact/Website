@@ -212,9 +212,11 @@ class Member {
     }
 
     public async syncCredits() { //Pushes credits to DB
-        const credits: Credits = this.Credits; //Hold onto in-memory credits
+        const credits: Credits = JSON.parse(JSON.stringify(this.Credits)); //Hold onto in-memory credits
         await this.dbPull(); //Pull any updates from DB (overwriting in-memory credits as a side effect).
-        this.Credits = credits; //Restore credits
+        for (const month of Object.keys(credits)) { //Restore event credits, but leave any manual changes to meeting credits alone
+            this.Credits[month].events = credits[month].events;
+        }
         return db.live.setMember(this.ID, this);
     }
 }

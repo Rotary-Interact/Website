@@ -42,7 +42,7 @@ type Request = Record<string, any>;
 type Response = Record<string, any>;
 
 app.get('/', (req: Request, res: Response) => {
-  return res.status(200).send(getPage('landing'));
+  return res.status(200).send(getPage('home'));
 });
 
 const whitelistedURLs = [];

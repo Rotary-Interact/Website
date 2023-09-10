@@ -182,7 +182,7 @@ async function updatePublicRecord(id: string, values: (string | number)[]): Prom
         }, {
             body: JSON.stringify({
                 "majorDimension": "ROWS",
-                values: values,
+                values: [values],
             }),
         });
     }
