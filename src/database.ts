@@ -18,7 +18,7 @@ async function getEvent(id: unknown, forceUpdate: boolean = true): Promise<Rotar
 }
 
 async function getEvents(): Promise<{ [key: string]: RotaryEvent }> {
-    const IDs: string[] = await helper.getEvents();
+    const IDs: string[] = await helper.getEventIDs();
     const events: { [key: string]: RotaryEvent } = {};
     for (const id of IDs) {
         events[id] = await getEvent(id, false);
@@ -55,7 +55,7 @@ async function getMember(id: unknown, forceUpdate: boolean = true): Promise<Memb
 }
 
 async function getMembers(): Promise<{ [key: string]: Member }> {
-    const IDs: string[] = await helper.getMembers();
+    const IDs: string[] = await helper.getMemberIDs();
     for (const id of IDs) {
         await getMember(id, false);
     }

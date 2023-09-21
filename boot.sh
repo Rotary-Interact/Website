@@ -10,4 +10,4 @@ npm audit
 npm audit fix
 tsc
 npm test
-npm start | tsc -w
+#npm start | tsc -w

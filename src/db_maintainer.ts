@@ -1,6 +1,6 @@
 "use strict";
 import {randStr} from "./utils.js";
-import {populateIDs, getMembersAndPasswords, setMemberPassword} from "./db_helper.js";
+import {populateIDs, getMembersAndPasswords, setMemberPassword, syncDB} from "./db_helper.js";
 import * as bcrypt from "bcrypt";
 import {Member} from "./members.js";
 import {RotaryEvent} from "./events.js";
@@ -64,13 +64,14 @@ async function syncMembers() {
 }
 
 async function maintain() {
-    await populateIDs(); //Run once for each server startup
+    await populateIDs(); // Run once for each server startup
+    await syncDB();
     await configureNewUsers();
     await syncCredits();
     await syncMembers();
-    setInterval(configureNewUsers, 10000); //Run every 10 seconds
-    setInterval(syncCredits, 60000); //Run every minute
-    setInterval(syncMembers, 60000); //Run every minute
+    setInterval(configureNewUsers, 10000); // Run every 10 seconds
+    setInterval(syncCredits, 60000); // Run every minute
+    setInterval(syncMembers, 60000); // Run every minute
   
 }
 
