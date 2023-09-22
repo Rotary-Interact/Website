@@ -1,5 +1,5 @@
 "use strict";
-import assert from 'node:assert/strict';
+import assert from "node:assert/strict";
 
 import {maintain} from "./src/db_maintainer.js";
 
@@ -44,8 +44,8 @@ async function sessionTests(m: Member) {
 
     m.endSession(token2);
     assert.throws(() => m.validateSession(token2), {
-        name: 'Error',
-        message: '401: Invalid login'
+        name: "Error",
+        message: "401: Invalid login"
     });
     assert.notEqual(m, null);
 
@@ -69,8 +69,8 @@ async function eventRegistrationTest(m1: Member, m2: Member) {
     assert.deepStrictEqual(await event.Register(m1.ID), true);
     assert.deepStrictEqual(event.RemainingSpots, 0);
     assert.rejects(async () => await event.Register(m1.ID), {
-        name: 'Error',
-        message: '400: You are already registered for this event.'
+        name: "Error",
+        message: "400: You are already registered for this event."
     });
     assert.deepStrictEqual(event.isRegistered(m1.ID), true);
     assert.deepStrictEqual((await m1.getEvents())[event.ID], await db.getEvent(event.ID));

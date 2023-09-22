@@ -59,16 +59,21 @@ async function syncCredits() {
 async function syncMembers() {
     const members: { [key: string]: Member } = await db.getMembers();
     for (const member of Object.values(members)) {
-        member.syncCredits();
+        await member.syncCredits();
     }
 }
 
 async function maintain() {
+    await syncDB();
     await populateIDs(); // Run once for each server startup
     await syncDB();
     await configureNewUsers();
+    await syncDB();
     await syncCredits();
+    await syncDB();
     await syncMembers();
+    await syncDB();
+    setInterval(syncDB, 60000); // Run every minute
     setInterval(configureNewUsers, 10000); // Run every 10 seconds
     setInterval(syncCredits, 60000); // Run every minute
     setInterval(syncMembers, 60000); // Run every minute

@@ -78,7 +78,7 @@ async function syncMemberDB(): Promise<void> {
 }
 
 async function syncPublicDB(): Promise<void> {
-    //await getPublicDB();
+    await getPublicDB();
     await setPublicDB();
 }
 
@@ -91,7 +91,7 @@ async function getEventDB(): Promise<void> {
     const rows: eventRow[] = res.data.values.map((row: any[]) => {
         return <eventRow>row.map((value: any) => {
            return {
-               value: !isNaN(value) ? Number(value) : String(value),
+               value: !isNaN(value) && String(value).length !== 10 ? Number(value) : String(value),
                changed: false
            }; 
         });
@@ -109,7 +109,7 @@ async function getMemberDB(): Promise<void> {
     const rows: memberRow[] = res.data.values.map((row: any[]) => {
         return <memberRow>row.map((value: any) => {
            return {
-               value: !isNaN(value) ? Number(value) : String(value),
+               value: !isNaN(value) && String(value).length !== 10 ? Number(value) : String(value),
                changed: false
            }; 
         });
@@ -118,7 +118,7 @@ async function getMemberDB(): Promise<void> {
     for (const row of rows) db.members[row[1].value] = row;
 }
 
-/*async function getPublicDB(): Promise<void> {
+async function getPublicDB(): Promise<void> {
     const res = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: publicCreditSheet.ID,
         range: `${publicCreditSheet.tab}!A:Z`,
@@ -127,14 +127,14 @@ async function getMemberDB(): Promise<void> {
     const rows: publicRow[] = res.data.values.map((row: any[]) => {
         return <publicRow>row.map((value: any) => {
            return {
-               value: !isNaN(value) ? Number(value) : String(value),
+               value: !isNaN(value) && String(value).length !== 10 ? Number(value) : String(value),
                changed: false
            }; 
         });
-    }).slice(1); // Exclude header row
+    }).slice(11); // Exclude header row
 
     for (const row of rows) db.public[row[0].value] = row;
-}*/
+}
 
 async function setEventDB(): Promise<void> {
     const IDs: string[] = await getEventIDs(); // In case rows were moved
@@ -221,13 +221,11 @@ async function setPublicDB(): Promise<void> {
 }
 
 async function getEvent(id: string): Promise<(string | number)[]> {
-    const row: (string | number)[] = db.events[id].map((cell: cell) => cell.value);
-
-    if (!row) {
+    if (!db.events[id]) {
         throw new Error(`404: Event with ID ${id} not found`);
     }
 
-    return row;
+    return db.events[id].map((cell: cell) => cell.value);
 }
 
 const getEvents = async (): Promise<(string | number)[][]> => Object.values(db.events).map((row: eventRow): (string | number)[] => row.map((cell: cell): string | number => cell.value));
@@ -242,13 +240,11 @@ async function getEventIDs(): Promise<string[]> {
 }
 
 async function getMember(id: string): Promise<(string | number)[]> {
-    const row: (string | number)[] = db.members[id].map((cell: cell) => cell.value);
-
-    if (!row) {
+    if (!db.members[id]) {
         throw new Error(`404: Member with ID ${id} not found`);
     }
 
-    return row;
+    return db.members[id].map((cell: cell) => cell.value);
 }
 
 const getMembers = async (): Promise<(string | number)[][]> => Object.values(db.members).map((row: memberRow): (string | number)[] => row.map((cell: cell): string | number => cell.value));
@@ -274,12 +270,19 @@ async function getMemberIDsByEmail(email: string): Promise<string[]> {
 
 async function setEvent(id: string, values: (string | number)[]): Promise<void> {
     const row: eventRow = db.events[id];
-    if (values.length !== row.length) throw new Error("500: Length of data write does not equal length of row.");
+    if (values.length !== 20) throw new Error("500: Length of data write does not equal length of row.");
     if (!row) {
         throw new Error(`404: Event with ID ${id} not found`);
     }
-    for (const i in row) {
-        if (row[i].value !== values[i]) {
+    for (let i = 0; i < values.length; i++) {
+        if (i >= row.length) {
+            row.push({
+                changed: true,
+                value: values[i]
+            });
+            continue;
+        }
+        if (values[i] !== row[i].value && values[i] !== null) {
             row[i].changed = true;
             row[i].value = values[i];
         }
@@ -288,12 +291,19 @@ async function setEvent(id: string, values: (string | number)[]): Promise<void> 
 
 async function setMember(id: string, values: (string | number)[]): Promise<void> {
     const row: memberRow = db.members[id];
-    if (values.length !== row.length) throw new Error("500: Length of data write does not equal length of row.");
+    if (values.length !== 29) throw new Error("500: Length of data write does not equal length of row.");
     if (!row) {
         throw new Error(`404: Member with ID ${id} not found`);
     }
-    for (const i in values) {
-        if (values[i] !== row[i].value) {
+    for (let i = 0; i < values.length; i++) {
+        if (i >= row.length) {
+            row.push({
+                changed: true,
+                value: values[i]
+            });
+            continue;
+        }
+        if (values[i] !== row[i].value && values[i] !== null) {
             row[i].changed = true;
             row[i].value = values[i];
         }
@@ -333,17 +343,26 @@ async function updatePublicRecord(id: string, values: (string | number)[]): Prom
     }*/
     if (values.length !== 26) throw new Error("500: Length of data write does not equal length of row.");
     if (!db.public[id]) {
+        const row = [];
         for (let i = 0; i < 26; i++) {
-            db.public[id].push({
+            row.push({
                 changed: true,
                 value: values[i]
             });
         }
+        db.public[id] = <publicRow>row;
         return;
     }
     const row: publicRow = db.public[id];
-    for (const i in values) {
-        if (values[i] !== row[i].value) {
+    for (let i = 0; i < values.length; i++) {
+        if (i >= row.length) {
+            row.push({
+                changed: true,
+                value: values[i]
+            });
+            continue;
+        }
+        if (values[i] !== row[i].value && values[i] !== null) {
             row[i].changed = true;
             row[i].value = values[i];
         }
@@ -352,13 +371,11 @@ async function updatePublicRecord(id: string, values: (string | number)[]): Prom
 
 async function getMembersAndPasswords(): Promise<[string, string][]> { // For db_maintainer.ts
     return Object.values(db.members).map((row: memberRow): [string, string] => {
-        return [String(row.values[1]), String(row.values[2])];
+        return [String(row[1].value), String(row[2].value)];
     }).slice(1); // Exclude header row
 }
 
 async function setMemberPassword(id: string, passwordHash: string): Promise<void> { // For db_maintainer.ts
-    console.log(db.members);
-    console.log(db.members[id]);
     db.members[id][2] = {
         value: passwordHash,
         changed: true
@@ -369,13 +386,16 @@ async function populateIDs() {
     // For members
     const memberRes = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: memberSheet.ID,
-        range: `${memberSheet.tab}!B:B`,
+        range: `${memberSheet.tab}!A:B`,
     });
     
     const memberIDs: Set<string> = new Set();
     for (let i = 1; i < memberRes.data.values.length; i++) { // Skip header row
         const row = memberRes.data.values[i];
-        if (typeof row[0] === "string" && row[0].length === 5) continue;
+        if (typeof row[1] === "string" && row[1].length === 5) {
+            memberIDs.add(row[1]);
+            continue;
+        }
         let id;
         do {
             id = nanoid(5);
@@ -392,7 +412,7 @@ async function populateIDs() {
         body: JSON.stringify({
             values: [
                 [], // Header row
-                [...memberIDs].map((id: string) => [id])
+                ...([...memberIDs].map((id: string) => [id]))
             ],
         })
     });
@@ -400,13 +420,16 @@ async function populateIDs() {
     // For events
     const eventRes = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: eventSheet.ID,
-        range: `${eventSheet.tab}!A:A`,
+        range: `${eventSheet.tab}!A:B`,
     });
     
     const eventIDs = new Set();
     for (let i = 1; i < eventRes.data.values.length; i++) { // Skip header row
         const row = eventRes.data.values[i];
-        if (typeof row[0] === "string" && row[0].length === 7) continue;
+        if (typeof row[0] === "string" && row[0].length === 7) {
+            eventIDs.add(row[0]);
+            continue;
+        }
         let id;
         do {
             id = nanoid(7);
@@ -423,14 +446,11 @@ async function populateIDs() {
         body: JSON.stringify({
             values: [
                 [], // Header row
-                [...eventIDs].map((id: string) => [id])
+                ...([...eventIDs].map((id: string) => [id]))
             ],
         })
     });
 }
-
-syncDB();
-setInterval(syncDB, 60000);
 
 export {
     syncDB,

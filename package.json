@@ -5,8 +5,8 @@
   "main": "core.js",
   "type": "module",
   "scripts": {
-    "start": "node core.js",
-    "test": "node test.js"
+    "start": "bun core.js",
+    "test": "bun test.js"
   },
   "keywords": [],
   "author": "",
