@@ -1,11 +1,11 @@
 {
-  "name": "Node.js TypeScript Template",
+  "name": "Rotary Website",
   "version": "1.0.0",
   "description": "",
   "main": "core.js",
   "type": "module",
   "scripts": {
-    "start": "bun core.js",
+    "start": "node core.js",
     "test": "bun test.js"
   },
   "keywords": [],

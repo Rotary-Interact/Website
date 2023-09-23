@@ -392,7 +392,7 @@ async function populateIDs() {
     const memberIDs: Set<string> = new Set();
     for (let i = 1; i < memberRes.data.values.length; i++) { // Skip header row
         const row = memberRes.data.values[i];
-        if (typeof row[1] === "string" && row[1].length === 5) {
+        if (typeof row[1] === "string" && row[1].length === 5 && !memberIDs.has(row[1])) {
             memberIDs.add(row[1]);
             continue;
         }
@@ -426,7 +426,7 @@ async function populateIDs() {
     const eventIDs = new Set();
     for (let i = 1; i < eventRes.data.values.length; i++) { // Skip header row
         const row = eventRes.data.values[i];
-        if (typeof row[0] === "string" && row[0].length === 7) {
+        if (typeof row[0] === "string" && row[0].length === 7 && !eventIDs.has(row[0])) {
             eventIDs.add(row[0]);
             continue;
         }
