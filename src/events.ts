@@ -81,14 +81,16 @@ class RotaryEvent {
             };
 
             this.organizer = info["Organizer"];
-            this.credits = isInteger(info["Credits"]) ? parseInt(info["Credits"]) : 0;
+            this.credits = isNumeric(info["Credits"]) ? parseFloat(info["Credits"]) : 0;
             this.totalSpots = isInteger(info["Total Spots"]) ? parseInt(info["Total Spots"]) : 0;
             this.lockedDeregistrationPeriod = isInteger(info["Locked Deregistration Period"]) ? parseInt(info["Locked Deregistration Period"]) : 0;
             this.image = ((info["Image"] === null || info["Image"] === "") ? "/media/logo.webp" : info["Image"]);
 
             try {
                 let participants: string[] = info["Participant IDs"].split(',');
-                participants = participants.splice(participants.indexOf("") + 1, 1);
+                if (participants.includes("")) {
+                    participants.splice(participants.indexOf(""), 1);
+                }
                 this.participants = new Set(participants);
             }
             catch (err) {
@@ -97,7 +99,9 @@ class RotaryEvent {
 
             try {
                 let verifiedParticipants: string[] = info["Verified Participant IDs"].split(',');
-                verifiedParticipants = verifiedParticipants.splice(verifiedParticipants.indexOf("") + 1, 1);
+                if (verifiedParticipants.includes("")) {
+                    verifiedParticipants.splice(verifiedParticipants.indexOf(""), 1);
+                }
                 this.verifiedParticipants = new Set(verifiedParticipants);
             }
             catch (err) {

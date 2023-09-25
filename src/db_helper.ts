@@ -68,18 +68,18 @@ async function syncDB(): Promise<void> {
 }
 
 async function syncEventDB(): Promise<void> {
-    await getEventDB();
     await setEventDB();
+    await getEventDB();
 }
 
 async function syncMemberDB(): Promise<void> {
-    await getMemberDB();
     await setMemberDB();
+    await getMemberDB();
 }
 
 async function syncPublicDB(): Promise<void> {
-    await getPublicDB();
     await setPublicDB();
+    await getPublicDB();
 }
 
 async function getEventDB(): Promise<void> {
@@ -292,7 +292,7 @@ async function setEvent(id: string, values: (string | number)[]): Promise<void> 
 async function setMember(id: string, values: (string | number)[]): Promise<void> {
     const row: memberRow = db.members[id];
     if (values.length !== 29) throw new Error("500: Length of data write does not equal length of row.");
-    if (!row) {
+    if (!db.members[id]) {
         throw new Error(`404: Member with ID ${id} not found`);
     }
     for (let i = 0; i < values.length; i++) {

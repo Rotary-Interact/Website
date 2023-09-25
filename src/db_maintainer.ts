@@ -40,27 +40,45 @@ async function syncCredits() {
 
         for (const memberID of attendees) {
             const member: Member = await db.getMember(memberID, true);
+            if (!members.has(member)) { // If member has not already had credits reset, reset credits to zero before syncing
+                for (const month of Object.values(member.Credits)) {
+                    month.events = 0;
+                }
+            }
+
             member.Credits[event.Month].events += event.Credits;
             members.add(member);
         }
 
         for (const memberID of nonAttendees) {
             const member: Member = await db.getMember(memberID, true);
+            if (!members.has(member)) { // If member has not already had credits reset, reset credits to zero before syncing
+                for (const month of Object.values(member.Credits)) {
+                    month.events = 0;
+                }
+            }
+
             member.Credits[event.Month].events -= event.Credits;
             members.add(member);
         }
     }
 
-    /*for (const member of Object.values(members)) {
+    for (const member of members) {
         await member.syncCredits();
-    }*/ //NOT needed as long as syncMembers() syncs credits for every member
+    }
 }
 
 async function syncMembers() {
-    const members: { [key: string]: Member } = await db.getMembers();
+    /*const members: { [key: string]: Member } = await db.getMembers();
     for (const member of Object.values(members)) {
         await member.syncCredits();
-    }
+    }*/ // This is now done more efficiently (only syncing credits for members who need it) in syncCredits()
+}
+
+async function sync() {
+    await syncCredits();
+    await syncMembers();
+    await syncDB();
 }
 
 async function maintain() {
@@ -73,10 +91,8 @@ async function maintain() {
     await syncDB();
     await syncMembers();
     await syncDB();
-    setInterval(syncDB, 60000); // Run every minute
     setInterval(configureNewUsers, 10000); // Run every 10 seconds
-    setInterval(syncCredits, 60000); // Run every minute
-    setInterval(syncMembers, 60000); // Run every minute
+    setInterval(sync, 60000); // Run every minute
   
 }
 

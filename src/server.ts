@@ -143,9 +143,14 @@ app.get('/dashboard', sessionValidation(), validate, async (req: Request, res: R
 app.route('/events')
   .get(async (req: Request, res: Response) => {
     try {
-      const events: { [key: string]: RotaryEvent } = await db.getEvents();
+      const events: RotaryEvent[] = Object.values(await db.getEvents());
+      events.sort((a, b) => { // Sort events by start date/time
+        const aStart: number = new Date(a.Start).getTime();
+        const bStart: number = new Date(b.Start).getTime();
+        return (isNaN(aStart) ? 0 : aStart) - (isNaN(bStart) ? 0 : bStart);
+      });
       let HTML: string = ``;
-      for (const [id, event] of Object.entries(events)) {
+      for (const event of events) {
         HTML += `${event.Name}`; //TODO: Button or card with event summary that has link to page with full info ("/events/${event.ID}")
       }
       return res.status(200).send(template(getPage('event'), {
