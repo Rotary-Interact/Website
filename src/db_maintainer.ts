@@ -68,11 +68,11 @@ async function syncCredits() {
     }
 }
 
-async function syncMembers() {
-    /*const members: { [key: string]: Member } = await db.getMembers();
+async function syncMembers() { // Run once for all users after server startup
+    const members: { [key: string]: Member } = await db.getMembers();
     for (const member of Object.values(members)) {
         await member.syncCredits();
-    }*/ // This is now done more efficiently (only syncing credits for members who need it) in syncCredits()
+    }
 }
 
 async function sync() {
