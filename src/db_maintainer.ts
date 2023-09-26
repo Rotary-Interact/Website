@@ -7,7 +7,7 @@ import {RotaryEvent} from "./events.js";
 import * as db from "./database.js";
 import {Credits} from "./definitions.js";
 
-async function configureNewUsers() {
+async function encryptPasswords() {
     const members = await getMembersAndPasswords();
     for (const [id, password] of members) {
         if (!(password.slice(0, 4) === "$2a$" || password.slice(0, 4) === "$2b$")) {
@@ -29,7 +29,7 @@ function encrypt(plaintextPassword, saltRounds): Promise<string> {
     });
 }
 
-async function syncCredits() {
+async function syncEventCredits() {
     const events: { [key: string]: RotaryEvent } = await db.getEvents();
     const members: Set<Member> = new Set<Member>();
     for (const [id, event] of Object.entries(events)) {
@@ -68,7 +68,7 @@ async function syncCredits() {
     }
 }
 
-async function syncMembers() { // Run once for all users after server startup
+async function syncMeetingCredits() { // Run once for all users after server startup
     const members: { [key: string]: Member } = await db.getMembers();
     for (const member of Object.values(members)) {
         await member.syncCredits();
@@ -76,24 +76,18 @@ async function syncMembers() { // Run once for all users after server startup
 }
 
 async function sync() {
-    await syncCredits();
-    await syncMembers();
+    await syncDB();
+    await populateIDs();
+    await encryptPasswords();
+    await syncDB();
+    await syncEventCredits();
+    await syncMeetingCredits();
     await syncDB();
 }
 
 async function maintain() {
-    await syncDB();
-    await populateIDs(); // Run once for each server startup
-    await syncDB();
-    await configureNewUsers();
-    await syncDB();
-    await syncCredits();
-    await syncDB();
-    await syncMembers();
-    await syncDB();
-    setInterval(configureNewUsers, 10000); // Run every 10 seconds
+    await sync();
     setInterval(sync, 60000); // Run every minute
-  
 }
 
 export {maintain};
