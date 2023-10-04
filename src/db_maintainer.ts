@@ -31,7 +31,7 @@ function encrypt(plaintextPassword, saltRounds): Promise<string> {
 
 async function syncEventCredits() {
     const events: { [key: string]: RotaryEvent } = await db.getEvents();
-    const members: Set<Member> = new Set<Member>();
+    const members: { [key: string]: Member } = {};
     for (const [id, event] of Object.entries(events)) {
         await event.dbPull();
         if (!event.Completed) continue;
@@ -39,31 +39,39 @@ async function syncEventCredits() {
         const nonAttendees: Set<string> = event.NonAttendees;
 
         for (const memberID of attendees) {
-            const member: Member = await db.getMember(memberID, true);
-            if (!members.has(member)) { // If member has not already had credits reset, reset credits to zero before syncing
-                for (const month of Object.values(member.Credits)) {
-                    month.events = 0;
+            let member: Member;
+            if (!members[memberID]) { // If member has not already had credits reset, reset credits to zero before syncing
+                member = await db.getMember(memberID, true);
+                for (const month of Object.keys(member.Credits)) {
+                    member.Credits[month].events = 0;
                 }
+                members[memberID] = member;
+            }
+            else {
+                member = members[memberID];
             }
 
             member.Credits[event.Month].events += event.Credits;
-            members.add(member);
         }
 
         for (const memberID of nonAttendees) {
-            const member: Member = await db.getMember(memberID, true);
-            if (!members.has(member)) { // If member has not already had credits reset, reset credits to zero before syncing
-                for (const month of Object.values(member.Credits)) {
-                    month.events = 0;
+            let member: Member;
+            if (!members[memberID]) { // If member has not already had credits reset, reset credits to zero before syncing
+                member = await db.getMember(memberID, true);
+                for (const month of Object.keys(member.Credits)) {
+                    member.Credits[month].events = 0;
                 }
+                members[memberID] = member;
+            }
+            else {
+                member = members[memberID];
             }
 
             member.Credits[event.Month].events -= event.Credits;
-            members.add(member);
         }
     }
 
-    for (const member of members) {
+    for (const member of Object.values(members)) {
         await member.syncCredits();
     }
 }
