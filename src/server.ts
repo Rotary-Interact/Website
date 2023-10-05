@@ -151,7 +151,33 @@ app.route('/events')
       });
       let HTML: string = ``;
       for (const event of events) {
-        HTML += `${event.Name}`; //TODO: Button or card with event summary that has link to page with full info ("/events/${event.ID}")
+        HTML += `<div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-item">
+                  <div class="row">
+                    <div class="col-xl-5">
+                      <div
+                        class="card-bg"
+                        style="background-image: url(${event.Image})"
+                      ></div>
+                    </div>
+                    <div class="col-xl-7 d-flex align-items-center">
+                      <div class="card-body">
+                        <h4 class="card-title">
+                          ${event.Name}
+                        </h4>
+                        <p>When: ${event.Start}</p>
+                        <p>Duration: ${event.Duration} minutes</p>
+                        <p>Where: ${event.Address}</p>
+                        <a
+                          href="/events/${event.ID}"
+                          class="btn-get-started"
+                          >Sign Up</a
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>`; //TODO: Button or card with event summary that has link to page with full info ("/events/${event.ID}")
       }
       return res.status(200).send(template(getPage('event'), {
         eventsHTML: HTML
