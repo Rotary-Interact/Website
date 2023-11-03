@@ -2,15 +2,18 @@
 ### How to run: ```bash boot.sh```
 ## For Rotary Officers
 Rotary Officers will only ever need to access the Event Database for manual editing.
-They should **never** view, edit, or open the Member Database.
 They should **never** share the Event Database or Member Database (but can share the Rotary Credit Spreadsheet).
 They should **never** directly edit the Rotary Credit Spreadsheet. Updates will be made by the website based on edits in the Event Database.
 They should **never** create, rearrange, rename, or delete columns in either databases or the Rotary Credit Spreadsheet.
+### Recording Meeting Attendance
+- Open the Member Database spreadsheet.
+- Navigate to the Main sheet/tab.
+- Press CTRL-F and search the database for each member's name. Enter "0.5" into the column corresponding to that month's meeting in the row for that member (don't worry if the total doesn't change, as it can take up to 60 seconds to automatically update).
 ### Creating an event
 To create an event:
 - Open the Event Database spreadsheet.
 - Navigate to the Staging (not Main) sheet/tab.
-- Enter the event details, leaving the ID column blank. Hover over the top cell in each column for an explanation of the column (this is only on cells with the black tab in the top right corner).
+- Enter the event details, leaving the ID column blank (it will automatically get filled in after the event is moved to the Main sheet in the final step). Hover over the top cell in each column for an explanation of the column (this is only on cells with the black tab in the top right corner).
 - It is the responsibility of the officers to ensure that the event details are correct and that the data is valid per the column descriptions.
 - When the event is ready to be published (e.g., at the next meeting), copy/paste the row of the event to the Main sheet/tab.
 ### Finding event participants
@@ -18,10 +21,11 @@ To find event participants and their contact information:
 - Open the Event Database spreadsheet.
 - Navigate to the Main (not Staging) sheet/tab.
 - Find the event in the spreadsheet.
-- Find the "Participant IDs" column which contains the IDs of the participants.
+- Find the "Participant IDs" column, which contains the IDs of the participants.
 - Find participant contact information associated with each ID in the Rotary Credit Spreadsheet (**NOT** the Member Database).
-### Updating credits and member participation
+### Updating credits and member attendance
 To update credits based on member participation (when a registered participant attends the event):
+- Navigate to the Main (not Staging) sheet/tab.
 - "Participant IDs" is for the IDs of members who **signed up**, separated by commas.
 - "Verified Participant IDs" is for the IDs of members who **actually attended**, separated by commas.
 - To give credits, simply copy/paste the ID of the participant from the "Participant IDs" column to the "Verified Participant IDs" column. There is nothing else to do.
