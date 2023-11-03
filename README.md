@@ -3,13 +3,14 @@
 ## For Rotary Officers
 Rotary Officers will only ever need to access the Event Database for manual editing.
 They should **never** view, edit, or open the Member Database.
+They should **never** share the Event Database or Member Database (but can share the Rotary Credit Spreadsheet).
 They should **never** directly edit the Rotary Credit Spreadsheet. Updates will be made by the website based on edits in the Event Database.
-Rotary Officers should never create, rearrange, rename, or delete columns in the either databases or the Rotary Credit Spreadsheet.
+They should **never** create, rearrange, rename, or delete columns in either databases or the Rotary Credit Spreadsheet.
 ### Creating an event
 To create an event:
 - Open the Event Database spreadsheet.
 - Navigate to the Staging (not Main) sheet/tab.
-- Enter the event details. Select the top cell in each column for an explanation of the column.
+- Enter the event details, leaving the ID column blank. Hover over the top cell in each column for an explanation of the column (this is only on cells with the black tab in the top right corner).
 - It is the responsibility of the officers to ensure that the event details are correct and that the data is valid per the column descriptions.
 - When the event is ready to be published (e.g., at the next meeting), copy/paste the row of the event to the Main sheet/tab.
 ### Finding event participants
@@ -21,7 +22,15 @@ To find event participants and their contact information:
 - Find participant contact information associated with each ID in the Rotary Credit Spreadsheet (**NOT** the Member Database).
 ### Updating credits and member participation
 To update credits based on member participation (when a registered participant attends the event):
-- Copy/paste (but do not move or cut/paste) the ID of the participant from the "Participant IDs" column to the "Verified Participant IDs" column.
+- "Participant IDs" is for the IDs of members who **signed up**, separated by commas.
+- "Verified Participant IDs" is for the IDs of members who **actually attended**, separated by commas.
+- To give credits, simply copy/paste the ID of the participant from the "Participant IDs" column to the "Verified Participant IDs" column. There is nothing else to do.
+- To excuse someone from the event (e.g., they couldn't attend due to illness), remove their ID from the "Participant IDs" column.
+- Participants who are in the "Participant IDs" AND the "Verified Participant IDs" will gain credits.
+- Participants who are in the "Participant IDs" AND NOT the "Verified Participant IDs" will lose credits.
+- Participants who are not in either column will have their credits unaffected.
+- Tldr: Both columns = gain, only first column = lose, neither column = no change.
+More details:
 - Members whose IDs are in the "Verified Participant IDs" column will automatically gain the credits specified in the "Credits" column in under 10 minutes if the server is running and if the event end time has passed (specified by the "End" column).
 - Members whose IDs are in the "Participant IDs" but not the "Verified Participant IDs" column (members who registered but did not attend) will automatically lose the credits specified in the "Credits" column in under 10 minutes if the server is running and if the event end time has passed (specified by the "End" column).
 For this reason, immediately after an event has finished, members may notice a credit deduction until the officers add their ID to the "Verified Participant IDs" column.
