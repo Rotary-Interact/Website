@@ -87,7 +87,7 @@ class RotaryEvent {
             this.image = ((info["Image"] === null || info["Image"] === "") ? "/media/logo.webp" : info["Image"]);
 
             try {
-                let participants: string[] = info["Participant IDs"].split(',');
+                let participants: string[] = info["Participant IDs"].replace(', ', ',').split(',');
                 if (participants.includes("")) {
                     participants.splice(participants.indexOf(""), 1);
                 }
@@ -98,7 +98,7 @@ class RotaryEvent {
             }
 
             try {
-                let verifiedParticipants: string[] = info["Verified Participant IDs"].split(',');
+                let verifiedParticipants: string[] = info["Verified Participant IDs"].replace(', ', ',').split(',');
                 if (verifiedParticipants.includes("")) {
                     verifiedParticipants.splice(verifiedParticipants.indexOf(""), 1);
                 }

@@ -4,6 +4,7 @@ let pageData = {};
 import fs from "fs";
 import * as utils from "./utils.js";
 import { errorInfo } from "./errors.js";
+import { Member } from "./members.js";
 
 const metadata = fs.readFileSync(utils.__dirname + '/metadata.html', 'utf8');
 const footer = fs.readFileSync(utils.__dirname + '/footer.html', 'utf8');
@@ -23,28 +24,30 @@ function errorPage(code: number, message: string = ''): string {
   return template(getPage('error'), error);
 }
 
-function getPage(page: string): string {
+function getPage(page: string, member: Member = null): string {
   let content: string | false;
   if (pageData[page]) { // If the page is cached
     content = pageData[page].content;
   }
   else {
-    content = refresh(page, true);
+    content = refresh(page, member, true);
   }
   if (!content) return errorPage(404, 'Page not found');
   return content;
 }
 
-function refresh(page: string, init: boolean = false): string | false { // Refresh pageData cache
+function refresh(page: string, member: Member = null, init: boolean = false): string | false { // Refresh pageData cache
   if (!fs.existsSync(`${utils.path}/public/views/${page}.html`)) return false;
   if (init) pageData[page] = {}; // If first time, create empty object for this page
-  pageData[page].content = template(fs.readFileSync(`${utils.path}/public/views/${page}.html`, 'utf8'), {
+  pageData[page].content = template(template(fs.readFileSync(`${utils.path}/public/views/${page}.html`, 'utf8'), {
     metadata: template(metadata, {
       page: page
     }),
     header: header,
     footer: footer,
-  });
+  }), !!member ? {
+      member_name: !!member.Name ? member.Name : "",
+  } : {});
   pageData[page].time = time;
   setTimeout(function() {
     refresh(page);

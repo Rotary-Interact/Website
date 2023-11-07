@@ -127,7 +127,7 @@ app.get('/dashboard', sessionValidation(), validate, async (req: Request, res: R
      - Display link to their member page("/members/{{id}}")
      - Display link to Member Form ("Account Settings") for them to adjust their account info https://forms.gle/mBDm3VDTCA42BAvB9 (they should be signed into the same Google Account that they used to sign up and select "Edit your response")
      */
-    return res.status(200).send(template(getPage('dashboard'), {
+    return res.status(200).send(template(getPage('dashboard', member), {
         id: member.ID,
         name: member.Name,
         grade: member.Grade,
@@ -143,8 +143,10 @@ app.get('/dashboard', sessionValidation(), validate, async (req: Request, res: R
 app.route('/events')
   .get(async (req: Request, res: Response) => {
     try {
-      const events: RotaryEvent[] = Object.values(await db.getEvents());
-      events.sort((a, b) => { // Sort events by start date/time
+        const member: Member = await db.getMember(req.signedCookies['member'], true);
+        member.validateSession(req.signedCookies['token']);
+        const events: RotaryEvent[] = Object.values(await db.getEvents());
+        events.sort((a, b) => { // Sort events by start date/time
         const aStart: number = new Date(a.Start).getTime();
         const bStart: number = new Date(b.Start).getTime();
         return (isNaN(aStart) ? 0 : aStart) - (isNaN(bStart) ? 0 : bStart);
@@ -179,7 +181,7 @@ app.route('/events')
                 </div>
               </div>`; //TODO: Button or card with event summary that has link to page with full info ("/events/${event.ID}")
       }
-      return res.status(200).send(template(getPage('event'), {
+      return res.status(200).send(template(getPage('event', member), {
         eventsHTML: HTML
       }));
     } catch (err) {
@@ -191,8 +193,10 @@ app.route('/events')
 app.route('/events/:id')
   .get(eventValidation(), validate, async (req: Request, res: Response) => {
     try {
+      const member: Member = await db.getMember(req.signedCookies['member'], true);
+      member.validateSession(req.signedCookies['token']);
       const event: RotaryEvent = await db.getEvent(req.params.id);
-      return res.status(200).send(safeTemplate(getPage('event'), { //TODO: Display link to register ("/events/{{id}}/register") and deregister ("/events/{{id}}/deregister")
+      return res.status(200).send(safeTemplate(getPage('event', member), { //TODO: Display link to register ("/events/{{id}}/register") and deregister ("/events/{{id}}/deregister")
         id: event.ID,
         name: event.Name,
         image: event.Image, //Image URL
@@ -223,8 +227,10 @@ app.route('/events/:id')
 app.route('/events/:id/register')
   .get(eventValidation(), sessionValidation(), validate, async (req: Request, res: Response) => {
     try {
+      const member: Member = await db.getMember(req.signedCookies['member']);
+      member.validateSession(req.signedCookies['token']);
       const event: RotaryEvent = await db.getEvent(req.params['id']);
-      return res.status(200).send(template(getPage('event_register'), { //TODO: Confirm registration with a form (containing a button) whose action is a POST request to this same route
+      return res.status(200).send(template(getPage('event_register', member), { //TODO: Confirm registration with a form (containing a button) whose action is a POST request to this same route
         id: event.ID,
         name: event.Name,
         credits: event.Credits,
@@ -247,7 +253,7 @@ app.route('/events/:id/register')
       const event: RotaryEvent = await db.getEvent(req.params['id']); //forceUpdate not necessary
       const success: boolean = await event.Register(member.ID);
       if (success) {
-        return res.status(200).send(template(getPage('event_register_success'), { //TODO: Display link back to event information page ("/events/{{id}}") and discovery page ("/events"). Also have a message that says "Successfully Registered for {{name}}!".
+        return res.status(200).send(template(getPage('event_register_success', member), { //TODO: Display link back to event information page ("/events/{{id}}") and discovery page ("/events"). Also have a message that says "Successfully Registered for {{name}}!".
           id: event.ID,
           name: event.Name,
           image: event.Image, //Image URL
@@ -257,7 +263,7 @@ app.route('/events/:id/register')
         }));
       }
       else {
-        return res.status(200).send(template(getPage('event_register_fail'), { //TODO: Display link back to events page ("/events") that says "Explore Other Events". Also have a message that says "{{name}} is full".
+        return res.status(200).send(template(getPage('event_register_fail', member), { //TODO: Display link back to events page ("/events") that says "Explore Other Events". Also have a message that says "{{name}} is full".
           name: event.Name,
           image: event.Image, //Image URL
         }));
@@ -271,8 +277,10 @@ app.route('/events/:id/register')
 app.route('/events/:id/deregister')
     .get(eventValidation(), validate, async (req: Request, res: Response) => {
       try {
+        const member: Member = await db.getMember(req.signedCookies['member']);
+        member.validateSession(req.signedCookies['token']);
         const event: RotaryEvent = await db.getEvent(req.params['id']);
-        return res.status(200).send(template(getPage('event_deregister'), { //TODO: Confirm deregistration with a form (containing just a button) whose action is a POST request to this same route
+        return res.status(200).send(template(getPage('event_deregister', member), { //TODO: Confirm deregistration with a form (containing just a button) whose action is a POST request to this same route
           id: event.ID,
           name: event.Name,
           credits: event.Credits,
@@ -295,13 +303,13 @@ app.route('/events/:id/deregister')
         const event: RotaryEvent = await db.getEvent(req.params['id'], true);
         const success: boolean = await event.Deregister(member.ID);
         if (success) {
-          return res.status(200).send(template(getPage('event_deregister_success'), { //TODO: Display link back to dashboard ("/dashboard") and a message that reads "Successfully Deregistered from {{name}}!".
+          return res.status(200).send(template(getPage('event_deregister_success', member), { //TODO: Display link back to dashboard ("/dashboard") and a message that reads "Successfully Deregistered from {{name}}!".
             name: event.Name,
             image: event.Image, //Image URL
           }));
         }
         else {
-          return res.status(200).send(template(getPage('event_deregister_fail'), { //TODO: Display link back to event information page ("/events/{{id}}") and dashboard ("/dashboard"). Include a message that reads "It is too late to deregister from this event. Contact the event's Rotary officer to deregister.".
+          return res.status(200).send(template(getPage('event_deregister_fail', member), { //TODO: Display link back to event information page ("/events/{{id}}") and dashboard ("/dashboard"). Include a message that reads "It is too late to deregister from this event. Contact the event's Rotary officer to deregister.".
             name: event.Name,
             image: event.Image, //Image URL
           }));
@@ -315,8 +323,10 @@ app.route('/events/:id/deregister')
 app.get('/get_id', emailValidation(), validate, async (req: Request, res: Response) => {
   try {
     if (!(await captchaCheck(req.body['g-recaptcha-response'], 'get_id'))) throw new Error("498: ReCAPTCHA verification failed.");
+    const member: Member = await db.getMember(req.signedCookies['member']);
+    member.validateSession(req.signedCookies['token']);
     const IDs: string[] = await db.getMemberIDsByEmail(req.query['email']);
-    return res.status(200).send(template(getPage('get_id'), {
+    return res.status(200).send(template(getPage('get_id', member), {
       IDs: IDs.join(', '),
       email: req.query['email']
     }));
@@ -374,12 +384,14 @@ app.route('/events/:id/confirm')
 app.route('/members')
   .get(async (req: Request, res: Response) => {
     try {
+      const member: Member = await db.getMember(req.signedCookies['member']);
+      member.validateSession(req.signedCookies['token']);
       const members: { [key: string]: Member } = await db.getMembers();
       let HTML: string = ``;
       for (const [id, member] of Object.entries(members)) {
         HTML += `${member.Name}`; //TODO: Button or card with member name and link to member page with full info ("/members/${member.ID}")
       }
-      return res.status(200).send(template(getPage('event'), {
+      return res.status(200).send(template(getPage('event', member), {
         membersHTML: HTML
       }));
     } catch (err) {
@@ -391,12 +403,14 @@ app.route('/members')
 app.route('/members/:id')
   .get(memberValidation(), validate, async (req: Request, res: Response) => {
     try {
-      const member: Member = await db.getMember(req.params.id);
-      return res.status(200).send(template(getPage('member'), {
-        id: member.ID,
-        name: member.Name,
-        grade: member.Grade,
-        credits: member.TotalCredits,
+      const member: Member = await db.getMember(req.signedCookies['member']);
+      member.validateSession(req.signedCookies['token']);
+      const otherMember: Member = await db.getMember(req.params.id);
+      return res.status(200).send(template(getPage('member', member), {
+        id: otherMember.ID,
+        name: otherMember.Name,
+        grade: otherMember.Grade,
+        credits: otherMember.TotalCredits,
       }));
     } catch (err) {
       const error: ErrInfo = parseError(err);
