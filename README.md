@@ -34,7 +34,7 @@ To update credits based on member participation (when a registered participant a
 - Participants who are in the "Participant IDs" AND NOT the "Verified Participant IDs" will lose credits.
 - Participants who are not in either column will have their credits unaffected.
 - Tldr: Both columns = gain, only first column = lose, neither column = no change.
-More details:
+#### More details:
 - Members whose IDs are in the "Verified Participant IDs" column will automatically gain the credits specified in the "Credits" column in under 10 minutes if the server is running and if the event end time has passed (specified by the "End" column).
 - Members whose IDs are in the "Participant IDs" but not the "Verified Participant IDs" column (members who registered but did not attend) will automatically lose the credits specified in the "Credits" column in under 10 minutes if the server is running and if the event end time has passed (specified by the "End" column).
 For this reason, immediately after an event has finished, members may notice a credit deduction until the officers add their ID to the "Verified Participant IDs" column.
